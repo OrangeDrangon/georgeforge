@@ -26,9 +26,16 @@ SKINS = 91
 
 
 class Command(BaseCommand):
+    """ """
     help = "Preloads data required for this app from ESI"
 
     def handle(self, *args, **options):
+        """
+
+        :param *args: 
+        :param **options: 
+
+        """
         call_command(
             "eveuniverse_load_types",
             __title__,

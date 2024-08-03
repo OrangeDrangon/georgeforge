@@ -21,11 +21,13 @@ from georgeforge.models import ForSale, Order
 
 @admin.register(ForSale)
 class ForSaleAdmin(admin.ModelAdmin):
+    """ """
     list_display = ["eve_type", "price", "description"]
     autocomplete_fields = ["eve_type"]
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    """ """
     list_display = ["user", "status", "eve_type", "price", "description", "notes"]
     autocomplete_fields = ["eve_type"]

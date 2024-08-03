@@ -27,9 +27,7 @@ class General(models.Model):
 
 
 class ForSale(models.Model):
-    """
-    An item for sale
-    """
+    """An item for sale"""
 
     eve_type = models.ForeignKey(
         EveType,
@@ -53,11 +51,10 @@ class ForSale(models.Model):
 
 
 class Order(models.Model):
-    """
-    An order from a user
-    """
+    """An order from a user"""
 
     class OrderStatus(models.IntegerChoices):
+        """ """
         PENDING = 10, _("Pending")
         AWAITING_DEPOSIT = 20, _("Awaiting Deposit")
         BUILDING = 30, _("Building")

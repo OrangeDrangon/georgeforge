@@ -28,8 +28,10 @@ logger = logging.getLogger(__name__)
 @login_required
 @permission_required("georgeforge.place_order")
 def store(request: WSGIRequest) -> HttpResponse:
-    """
-    Store view
+    """Store view
+
+    :param request: WSGIRequest: 
+
     """
 
     for_sale = ForSale.objects.select_related().all()
@@ -42,8 +44,11 @@ def store(request: WSGIRequest) -> HttpResponse:
 @login_required
 @permission_required("georgeforge.place_order")
 def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
-    """
-    Place order for a specific ship
+    """Place order for a specific ship
+
+    :param request: WSGIRequest: 
+    :param id: int: 
+
     """
     for_sale = ForSale.objects.get(id=id)
 
@@ -78,6 +83,11 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
 @login_required
 @permission_required("georgeforge.manage_store")
 def bulk_import_form(request: WSGIRequest) -> HttpResponse:
+    """
+
+    :param request: WSGIRequest: 
+
+    """
     if request.method == "POST":
         form = BulkImportStoreItemsForm(request.POST)
 

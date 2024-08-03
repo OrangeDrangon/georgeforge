@@ -25,7 +25,11 @@ class GeorgeForgeMenuItem(MenuItemHook):
         )
 
     def render(self, request):
-        """Render the menu item"""
+        """Render the menu item
+
+        :param request: 
+
+        """
 
         if request.user.has_perm("georgeforge.place_order"):
             return MenuItemHook.render(self, request)

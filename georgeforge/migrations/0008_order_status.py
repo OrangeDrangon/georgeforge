@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    """ """
 
     dependencies = [
         ("georgeforge", "0007_order_description_alter_forsale_description_and_more"),
