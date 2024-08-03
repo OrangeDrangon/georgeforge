@@ -33,8 +33,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """
 
-        :param *args:
-        :param **options:
+        :param *args: 
+        :param **options: 
 
         """
         call_command(
