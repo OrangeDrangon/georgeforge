@@ -1,14 +1,14 @@
 """
 App Models
 """
-
-# Eve Universe
-from eveuniverse.models import EveType, EveMarketGroup
-
 # Django
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import User
+from eveuniverse.models import EveMarketGroup
+from eveuniverse.models import EveType
+# Alliance Auth (External Libs)
+# Eve Universe
 
 
 class General(models.Model):
@@ -26,9 +26,7 @@ class General(models.Model):
 
 
 class ForSale(models.Model):
-    """
-    An item for sale
-    """
+    """An item for sale"""
 
     eve_type = models.ForeignKey(
         EveType,
@@ -52,11 +50,10 @@ class ForSale(models.Model):
 
 
 class Order(models.Model):
-    """
-    An order from a user
-    """
+    """An order from a user"""
 
     class OrderStatus(models.IntegerChoices):
+        """ """
         PENDING = 10, _("Pending")
         AWAITING_DEPOSIT = 20, _("Awaiting Deposit")
         BUILDING = 30, _("Building")

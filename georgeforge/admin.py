@@ -1,29 +1,38 @@
 """Admin models"""
-
+# Standard Library
 from typing import Any
 
-# Eve Universe
-from eveuniverse.models import EveType, EveCategory, EveMarketGroup
-
-# Django
 from django.contrib import admin  # noqa: F401
-from django.db.models.fields.related import ForeignKey, ManyToManyField
-from django.forms.models import ModelChoiceField, ModelMultipleChoiceField
+from django.db.models.fields.related import ForeignKey
+from django.db.models.fields.related import ManyToManyField
+from django.forms.models import ModelChoiceField
+from django.forms.models import ModelMultipleChoiceField
 from django.http import HttpRequest
+from eveuniverse.models import EveCategory
+from eveuniverse.models import EveMarketGroup
+from eveuniverse.models import EveType
 
+from georgeforge.models import ForSale
+from georgeforge.models import Order
+# Django
+# Alliance Auth (External Libs)
+# Eve Universe
 # George Forge
-from georgeforge.models import ForSale, Order
 
 # Register your models here.
 
 
 @admin.register(ForSale)
 class ForSaleAdmin(admin.ModelAdmin):
+    """ """
     list_display = ["eve_type", "price", "description"]
     autocomplete_fields = ["eve_type"]
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ["user", "status", "eve_type", "price", "description", "notes"]
+    """ """
+    list_display = [
+        "user", "status", "eve_type", "price", "description", "notes"
+    ]
     autocomplete_fields = ["eve_type"]

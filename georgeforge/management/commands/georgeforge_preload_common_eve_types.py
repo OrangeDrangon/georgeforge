@@ -1,7 +1,9 @@
+# Django
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 from georgeforge import __title__
+# George Forge
 
 # Eve Category IDs
 MATERIAL = 4
@@ -24,9 +26,16 @@ SKINS = 91
 
 
 class Command(BaseCommand):
+    """ """
     help = "Preloads data required for this app from ESI"
 
     def handle(self, *args, **options):
+        """
+
+        :param *args:
+        :param **options:
+
+        """
         call_command(
             "eveuniverse_load_types",
             __title__,

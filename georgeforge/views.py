@@ -1,25 +1,29 @@
 """App Views"""
-
-import logging
+# Standard Library
 import csv
+import logging
 
-# Django
-from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.humanize.templatetags.humanize import intcomma
-from django.template.defaultfilters import pluralize
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
+from django.contrib.humanize.templatetags.humanize import intcomma
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse
-from django.shortcuts import render
-from django.utils.translation import gettext_lazy as _
 from django.shortcuts import redirect
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-
+from django.shortcuts import render
+from django.template.defaultfilters import pluralize
+from django.utils.translation import gettext_lazy as _
 from eveuniverse.models import EveType
 
+from georgeforge.forms import BulkImportStoreItemsForm
+from georgeforge.forms import StoreOrderForm
+from georgeforge.models import ForSale
+from georgeforge.models import Order
+# Django
+# Alliance Auth (External Libs)
 # George Forge
-from georgeforge.models import ForSale, Order
-from georgeforge.forms import StoreOrderForm, BulkImportStoreItemsForm
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +31,10 @@ logger = logging.getLogger(__name__)
 @login_required
 @permission_required("georgeforge.place_order")
 def store(request: WSGIRequest) -> HttpResponse:
-    """
-    Store view
+    """Store view
+
+    :param request: WSGIRequest:
+
     """
 
     for_sale = ForSale.objects.select_related().all()
@@ -41,8 +47,11 @@ def store(request: WSGIRequest) -> HttpResponse:
 @login_required
 @permission_required("georgeforge.place_order")
 def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
-    """
-    Place order for a specific ship
+    """Place order for a specific ship
+
+    :param request: WSGIRequest:
+    :param id: int:
+
     """
     for_sale = ForSale.objects.get(id=id)
 
@@ -63,8 +72,10 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
 
             messages.success(
                 request,
-                _("Successfully ordered %(name)s for %(price)s ISK")
-                % {"name": for_sale.eve_type.name, "price": intcomma(for_sale.price)},
+                _("Successfully ordered %(name)s for %(price)s ISK") % {
+                    "name": for_sale.eve_type.name,
+                    "price": intcomma(for_sale.price)
+                },
             )
 
             return redirect("georgeforge:store")
@@ -77,16 +88,20 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
 @login_required
 @permission_required("georgeforge.manage_store")
 def bulk_import_form(request: WSGIRequest) -> HttpResponse:
+    """
+
+    :param request: WSGIRequest:
+
+    """
     if request.method == "POST":
         form = BulkImportStoreItemsForm(request.POST)
 
         if form.is_valid():
             data = form.cleaned_data["data"]
             parsed = [
-                row
-                for row in csv.DictReader(
-                    data.splitlines(), fieldnames=("name", "price", "description")
-                )
+                row for row in csv.DictReader(data.splitlines(),
+                                              fieldnames=("name", "price",
+                                                          "description"))
             ]
 
             ForSale.objects.all().delete()
@@ -105,16 +120,17 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
                 except ObjectDoesNotExist:
                     messages.warning(
                         request,
-                        _("%(name)s does not exist and was not added")
-                        % {"name": item["name"]},
+                        _("%(name)s does not exist and was not added") %
+                        {"name": item["name"]},
                     )
                     had_error += 1
                 except ValidationError as ex:
                     messages.warning(
                         request,
-                        _("%(name)s had a validation error: %(error)s")
-                        % {"name": item["name"], "error": ex.message}
-                        % ex.params,
+                        _("%(name)s had a validation error: %(error)s") % {
+                            "name": item["name"],
+                            "error": ex.message
+                        } % ex.params,
                     )
                     had_error += 1
 
@@ -123,8 +139,10 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
             if imported > 0:
                 messages.success(
                     request,
-                    _("Imported %(n)s item%(plural)s")
-                    % {"n": imported, "plural": pluralize(imported)},
+                    _("Imported %(n)s item%(plural)s") % {
+                        "n": imported,
+                        "plural": pluralize(imported)
+                    },
                 )
 
             return redirect("georgeforge:bulk_import_form")
