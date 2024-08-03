@@ -35,5 +35,7 @@ class ForSaleAdmin(admin.ModelAdmin):
 class OrderAdmin(admin.ModelAdmin):
     """ """
 
-    list_display = ["user", "status", "eve_type", "price", "description", "notes"]
+    list_display = [
+        "user", "status", "eve_type", "price", "description", "notes"
+    ]
     autocomplete_fields = ["eve_type"]
