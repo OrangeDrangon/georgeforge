@@ -34,7 +34,7 @@ def store(request: WSGIRequest) -> HttpResponse:
     """Store view
 
     :param request: WSGIRequest:
-    :param request: WSGIRequest: 
+    :param request: WSGIRequest:
 
     """
 
@@ -52,8 +52,8 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
 
     :param request: WSGIRequest:
     :param id: int:
-    :param request: WSGIRequest: 
-    :param id: int: 
+    :param request: WSGIRequest:
+    :param id: int:
 
     """
     for_sale = ForSale.objects.get(id=id)
@@ -92,7 +92,7 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
     """
 
     :param request: WSGIRequest:
-    :param request: WSGIRequest: 
+    :param request: WSGIRequest:
 
     """
     if request.method == "POST":

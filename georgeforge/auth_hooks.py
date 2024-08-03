@@ -26,7 +26,7 @@ class GeorgeForgeMenuItem(MenuItemHook):
     def render(self, request):
         """Render the menu item
 
-        :param request: 
+        :param request:
 
         """
 
