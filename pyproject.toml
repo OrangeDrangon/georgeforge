@@ -1,49 +1,38 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = [
-    "hatchling",
-]
+requires = ["hatchling"]
 
 [project]
 name = "georgeforge"
 description = ""
 readme = "README.md"
-keywords = [
-    "allianceauth"
-]
-license = {file = "LICENSE"}
-authors = [
-]
+keywords = ["allianceauth"]
+license = { file = "LICENSE" }
+authors = []
 requires-python = ">=3.8"
 classifiers = [
-    "Environment :: Web Environment",
-    "Framework :: Django",
-    "Framework :: Django :: 4.2",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Internet :: WWW/HTTP",
-    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+  "Environment :: Web Environment",
+  "Framework :: Django",
+  "Framework :: Django :: 4.2",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
-dynamic = [
-    "version",
-]
-dependencies = [
-    "allianceauth<5.0.0,>=4",
-]
+dynamic = ["version"]
+dependencies = ["allianceauth<5.0.0,>=4", "django-eveuniverse<2.0.0,>=1"]
 [project.urls]
 
 [tool.hatch.version]
 path = "georgeforge/__init__.py"
 
 [tool.hatch.build]
-include = [
-    "/georgeforge",
-]
+include = ["/georgeforge"]
