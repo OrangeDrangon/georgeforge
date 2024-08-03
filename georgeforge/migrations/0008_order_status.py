@@ -6,14 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('georgeforge', '0007_order_description_alter_forsale_description_and_more'),
+        ("georgeforge", "0007_order_description_alter_forsale_description_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='status',
-            field=models.IntegerField(choices=[(0, 'Pending'), (1, 'Building'), (2, 'Awaiting Final Payment'), (3, 'Delivered'), (4, 'Rejected'), (5, 'Awaiting Deposit')], default=0, verbose_name='Status'),
+            model_name="order",
+            name="status",
+            field=models.IntegerField(
+                choices=[
+                    (0, "Pending"),
+                    (1, "Building"),
+                    (2, "Awaiting Final Payment"),
+                    (3, "Delivered"),
+                    (4, "Rejected"),
+                    (5, "Awaiting Deposit"),
+                ],
+                default=0,
+                verbose_name="Status",
+            ),
             preserve_default=False,
         ),
     ]

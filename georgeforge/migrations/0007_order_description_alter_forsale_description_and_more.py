@@ -7,29 +7,38 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('eveuniverse', '0010_alter_eveindustryactivityduration_eve_type_and_more'),
-        ('georgeforge', '0006_alter_order_eve_type'),
+        ("eveuniverse", "0010_alter_eveindustryactivityduration_eve_type_and_more"),
+        ("georgeforge", "0006_alter_order_eve_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='description',
-            field=models.TextField(blank=True, max_length=4096, verbose_name='Description'),
+            model_name="order",
+            name="description",
+            field=models.TextField(
+                blank=True, max_length=4096, verbose_name="Description"
+            ),
         ),
         migrations.AlterField(
-            model_name='forsale',
-            name='description',
-            field=models.TextField(blank=True, max_length=4096, verbose_name='Description'),
+            model_name="forsale",
+            name="description",
+            field=models.TextField(
+                blank=True, max_length=4096, verbose_name="Description"
+            ),
         ),
         migrations.AlterField(
-            model_name='forsale',
-            name='eve_type',
-            field=models.ForeignKey(limit_choices_to={'published': 1}, on_delete=django.db.models.deletion.CASCADE, to='eveuniverse.evetype', verbose_name='EVE Type'),
+            model_name="forsale",
+            name="eve_type",
+            field=models.ForeignKey(
+                limit_choices_to={"published": 1},
+                on_delete=django.db.models.deletion.CASCADE,
+                to="eveuniverse.evetype",
+                verbose_name="EVE Type",
+            ),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='notes',
-            field=models.TextField(max_length=4096, verbose_name='Notes'),
+            model_name="order",
+            name="notes",
+            field=models.TextField(max_length=4096, verbose_name="Notes"),
         ),
     ]

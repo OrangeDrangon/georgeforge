@@ -7,14 +7,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('eveuniverse', '0010_alter_eveindustryactivityduration_eve_type_and_more'),
-        ('georgeforge', '0003_alter_forsale_description'),
+        ("eveuniverse", "0010_alter_eveindustryactivityduration_eve_type_and_more"),
+        ("georgeforge", "0003_alter_forsale_description"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='forsale',
-            name='eve_type',
-            field=models.ForeignKey(limit_choices_to={'published': 1}, on_delete=django.db.models.deletion.CASCADE, to='eveuniverse.evetype', verbose_name='EVE Type'),
+            model_name="forsale",
+            name="eve_type",
+            field=models.ForeignKey(
+                limit_choices_to={"published": 1},
+                on_delete=django.db.models.deletion.CASCADE,
+                to="eveuniverse.evetype",
+                verbose_name="EVE Type",
+            ),
         ),
     ]

@@ -7,22 +7,56 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('eveuniverse', '0010_alter_eveindustryactivityduration_eve_type_and_more'),
-        ('georgeforge', '0001_initial'),
+        ("eveuniverse", "0010_alter_eveindustryactivityduration_eve_type_and_more"),
+        ("georgeforge", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='general',
-            options={'default_permissions': (), 'managed': False, 'permissions': (('place_order', 'Can place an order'), ('manage_store', 'Can manage the store'))},
+            name="general",
+            options={
+                "default_permissions": (),
+                "managed": False,
+                "permissions": (
+                    ("place_order", "Can place an order"),
+                    ("manage_store", "Can manage the store"),
+                ),
+            },
         ),
         migrations.CreateModel(
-            name='ForSale',
+            name="ForSale",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', models.TextField(verbose_name='Description')),
-                ('price', models.DecimalField(decimal_places=2, help_text='Cost per unit', max_digits=15, verbose_name='Price')),
-                ('eve_type', models.ForeignKey(limit_choices_to={'eve_market_group__isnull': False, 'published': 1}, on_delete=django.db.models.deletion.CASCADE, to='eveuniverse.evetype', verbose_name='EVE Type')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("description", models.TextField(verbose_name="Description")),
+                (
+                    "price",
+                    models.DecimalField(
+                        decimal_places=2,
+                        help_text="Cost per unit",
+                        max_digits=15,
+                        verbose_name="Price",
+                    ),
+                ),
+                (
+                    "eve_type",
+                    models.ForeignKey(
+                        limit_choices_to={
+                            "eve_market_group__isnull": False,
+                            "published": 1,
+                        },
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="eveuniverse.evetype",
+                        verbose_name="EVE Type",
+                    ),
+                ),
             ],
         ),
     ]

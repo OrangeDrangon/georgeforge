@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('georgeforge', '0002_alter_general_options_forsale'),
+        ("georgeforge", "0002_alter_general_options_forsale"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='forsale',
-            name='description',
-            field=models.TextField(blank=True, verbose_name='Description'),
+            model_name="forsale",
+            name="description",
+            field=models.TextField(blank=True, verbose_name="Description"),
         ),
     ]
