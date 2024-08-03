@@ -3,23 +3,19 @@
 # Standard Library
 from typing import Any
 
-from django.contrib import admin  # noqa: F401
-from django.db.models.fields.related import ForeignKey
-from django.db.models.fields.related import ManyToManyField
-from django.forms.models import ModelChoiceField
-from django.forms.models import ModelMultipleChoiceField
-from django.http import HttpRequest
-from eveuniverse.models import EveCategory
-from eveuniverse.models import EveMarketGroup
-from eveuniverse.models import EveType
-
-from georgeforge.models import ForSale
-from georgeforge.models import Order
-
 # Django
+from django.contrib import admin  # noqa: F401
+from django.db.models.fields.related import ForeignKey, ManyToManyField
+from django.forms.models import ModelChoiceField, ModelMultipleChoiceField
+from django.http import HttpRequest
+
 # Alliance Auth (External Libs)
-# Eve Universe
+from eveuniverse.models import EveCategory, EveMarketGroup, EveType
+
 # George Forge
+from georgeforge.models import ForSale, Order
+
+# Eve Universe
 
 # Register your models here.
 

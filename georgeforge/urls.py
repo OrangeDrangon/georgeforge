@@ -3,9 +3,8 @@
 # Django
 from django.urls import path
 
-from georgeforge import views
-
 # George Forge
+from georgeforge import views
 
 app_name: str = "georgeforge"
 

@@ -1,15 +1,14 @@
 """Hook into Alliance Auth"""
 
 # Django
-from allianceauth import hooks
-from allianceauth.services.hooks import MenuItemHook
-from allianceauth.services.hooks import UrlHook
 from django.utils.translation import gettext_lazy as _
 
-from georgeforge import urls
-
 # Alliance Auth
+from allianceauth import hooks
+from allianceauth.services.hooks import MenuItemHook, UrlHook
+
 # George Forge
+from georgeforge import urls
 
 
 class GeorgeForgeMenuItem(MenuItemHook):
