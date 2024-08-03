@@ -1,15 +1,14 @@
 """
 App Models
 """
-
 # Django
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from eveuniverse.models import EveMarketGroup
+from eveuniverse.models import EveType
 # Alliance Auth (External Libs)
 # Eve Universe
-from eveuniverse.models import EveMarketGroup, EveType
 
 
 class General(models.Model):

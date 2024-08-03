@@ -1,10 +1,9 @@
 """App URLs"""
-
 # Django
 from django.urls import path
 
-# George Forge
 from georgeforge import views
+# George Forge
 
 app_name: str = "georgeforge"
 
