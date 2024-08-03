@@ -9,7 +9,8 @@ class Migration(migrations.Migration):
     """ """
 
     dependencies = [
-        ("eveuniverse", "0010_alter_eveindustryactivityduration_eve_type_and_more"),
+        ("eveuniverse",
+         "0010_alter_eveindustryactivityduration_eve_type_and_more"),
         ("georgeforge", "0001_initial"),
     ]
 
@@ -18,7 +19,8 @@ class Migration(migrations.Migration):
             name="general",
             options={
                 "default_permissions": (),
-                "managed": False,
+                "managed":
+                False,
                 "permissions": (
                     ("place_order", "Can place an order"),
                     ("manage_store", "Can manage the store"),

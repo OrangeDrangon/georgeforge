@@ -19,7 +19,8 @@ class BulkImportStoreItemsForm(forms.Form):
     data = forms.CharField(
         label="Data",
         empty_value="",
-        widget=forms.Textarea(
-            attrs={"rows": "5", "placeholder": "Item Name,Price,Description"}
-        ),
+        widget=forms.Textarea(attrs={
+            "rows": "5",
+            "placeholder": "Item Name,Price,Description"
+        }),
     )

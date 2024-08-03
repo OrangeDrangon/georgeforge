@@ -8,7 +8,8 @@ class Migration(migrations.Migration):
     """ """
 
     dependencies = [
-        ("georgeforge", "0007_order_description_alter_forsale_description_and_more"),
+        ("georgeforge",
+         "0007_order_description_alter_forsale_description_and_more"),
     ]
 
     operations = [
