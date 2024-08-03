@@ -1,15 +1,17 @@
 """Admin models"""
 
+# Standard Library
 from typing import Any
-
-# Eve Universe
-from eveuniverse.models import EveType, EveCategory, EveMarketGroup
 
 # Django
 from django.contrib import admin  # noqa: F401
 from django.db.models.fields.related import ForeignKey, ManyToManyField
 from django.forms.models import ModelChoiceField, ModelMultipleChoiceField
 from django.http import HttpRequest
+
+# Alliance Auth (External Libs)
+# Eve Universe
+from eveuniverse.models import EveCategory, EveMarketGroup, EveType
 
 # George Forge
 from georgeforge.models import ForSale, Order

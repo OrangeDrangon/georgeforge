@@ -1,25 +1,26 @@
 """App Views"""
 
-import logging
+# Standard Library
 import csv
+import logging
 
 # Django
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.template.defaultfilters import pluralize
-from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
-from django.shortcuts import redirect
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
+# Alliance Auth (External Libs)
 from eveuniverse.models import EveType
 
 # George Forge
+from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
 from georgeforge.models import ForSale, Order
-from georgeforge.forms import StoreOrderForm, BulkImportStoreItemsForm
 
 logger = logging.getLogger(__name__)
 
