@@ -9,6 +9,7 @@ from georgeforge import views
 app_name: str = "georgeforge"
 
 urlpatterns = [
-    path("", views.store, name="store"),
-    path("order/<int:id>", views.order, name="order")
+    path("store", views.store, name="store"),
+    path("store/order/<int:id>", views.store_order_form, name="store_order_form"),
+    path("bulk_import_form", views.bulk_import_form, name="bulk_import_form"),
 ]
