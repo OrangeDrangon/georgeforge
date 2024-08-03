@@ -9,8 +9,7 @@ class Migration(migrations.Migration):
     """ """
 
     dependencies = [
-        ("eveuniverse",
-         "0010_alter_eveindustryactivityduration_eve_type_and_more"),
+        ("eveuniverse", "0010_alter_eveindustryactivityduration_eve_type_and_more"),
         ("georgeforge", "0003_alter_forsale_description"),
     ]
 

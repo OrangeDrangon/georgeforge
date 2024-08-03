@@ -1,4 +1,5 @@
 """Admin models"""
+
 # Standard Library
 from typing import Any
 
@@ -14,6 +15,7 @@ from eveuniverse.models import EveType
 
 from georgeforge.models import ForSale
 from georgeforge.models import Order
+
 # Django
 # Alliance Auth (External Libs)
 # Eve Universe
@@ -25,6 +27,7 @@ from georgeforge.models import Order
 @admin.register(ForSale)
 class ForSaleAdmin(admin.ModelAdmin):
     """ """
+
     list_display = ["eve_type", "price", "description"]
     autocomplete_fields = ["eve_type"]
 
@@ -32,7 +35,6 @@ class ForSaleAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     """ """
-    list_display = [
-        "user", "status", "eve_type", "price", "description", "notes"
-    ]
+
+    list_display = ["user", "status", "eve_type", "price", "description", "notes"]
     autocomplete_fields = ["eve_type"]

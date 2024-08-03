@@ -9,8 +9,7 @@ class Migration(migrations.Migration):
     """ """
 
     dependencies = [
-        ("eveuniverse",
-         "0010_alter_eveindustryactivityduration_eve_type_and_more"),
+        ("eveuniverse", "0010_alter_eveindustryactivityduration_eve_type_and_more"),
         ("georgeforge", "0006_alter_order_eve_type"),
     ]
 
@@ -18,16 +17,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="order",
             name="description",
-            field=models.TextField(blank=True,
-                                   max_length=4096,
-                                   verbose_name="Description"),
+            field=models.TextField(
+                blank=True, max_length=4096, verbose_name="Description"
+            ),
         ),
         migrations.AlterField(
             model_name="forsale",
             name="description",
-            field=models.TextField(blank=True,
-                                   max_length=4096,
-                                   verbose_name="Description"),
+            field=models.TextField(
+                blank=True, max_length=4096, verbose_name="Description"
+            ),
         ),
         migrations.AlterField(
             model_name="forsale",
