@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 def store(request: WSGIRequest) -> HttpResponse:
     """Store view
 
-    :param request: WSGIRequest: 
+    :param request: WSGIRequest:
 
     """
 
@@ -49,8 +49,8 @@ def store(request: WSGIRequest) -> HttpResponse:
 def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
     """Place order for a specific ship
 
-    :param request: WSGIRequest: 
-    :param id: int: 
+    :param request: WSGIRequest:
+    :param id: int:
 
     """
     for_sale = ForSale.objects.get(id=id)
@@ -88,7 +88,7 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
 def bulk_import_form(request: WSGIRequest) -> HttpResponse:
     """
 
-    :param request: WSGIRequest: 
+    :param request: WSGIRequest:
 
     """
     if request.method == "POST":
