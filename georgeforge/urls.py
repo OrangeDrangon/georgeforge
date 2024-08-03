@@ -9,5 +9,5 @@ from georgeforge import views
 app_name: str = "georgeforge"
 
 urlpatterns = [
-    path("", views.index, name="index"),
+    path("", views.store, name="store"),
 ]

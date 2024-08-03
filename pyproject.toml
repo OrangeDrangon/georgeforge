@@ -37,6 +37,7 @@ dynamic = [
 ]
 dependencies = [
     "allianceauth<5.0.0,>=4",
+    "django-eveuniverse<2.0.0,>=1"
 ]
 [project.urls]
 

@@ -1,0 +1,33 @@
+{% extends "georgeforge/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% block details %}
+    {% for entry in for_sale %}
+        <div class="entry">
+            <div class="row">
+                <span>
+                    <img height="64"
+                         width="64"
+                         src="{{ entry.eve_type.render_url }}"
+                         alt="{% translate "Ship Image" %}" />
+                </span>
+                <span>{{ entry.eve_type.name }}</span>
+                <span>{{ entry.price }} ISK</span>
+            </div>
+            <div class="row">
+                <span>{{ entry.description }}</span>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock details %}
+
+{% block extra_javascript %}
+{% endblock extra_javascript %}
+{% block extra_css %}
+    <link rel="stylesheet"
+          href="{% static 'georgeforge/css/store.css' %}"
+          type="text/css"
+          media="screen" />
+{% endblock extra_css %}
+{% block extra_script %}
+{% endblock extra_script %}

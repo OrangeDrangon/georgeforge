@@ -20,14 +20,14 @@ class GeorgeForgeMenuItem(MenuItemHook):
             self,
             _("George Forge"),
             "fas fa-cube fa-fw",
-            "georgeforge:index",
+            "georgeforge:store",
             navactive=["georgeforge:"],
         )
 
     def render(self, request):
         """Render the menu item"""
 
-        if request.user.has_perm("georgeforge.basic_access"):
+        if request.user.has_perm("georgeforge.place_order"):
             return MenuItemHook.render(self, request)
 
         return ""
