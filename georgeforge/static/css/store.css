@@ -1,9 +1,0 @@
-.allianceauth-georgeforge .entry {
-    display: flex;
-    flex-flow: column;
-}
-
-.allianceauth-georgeforge .entry .row {
-    display: flex;
-    flex-flow: row;
-}

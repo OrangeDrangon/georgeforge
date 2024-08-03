@@ -8,6 +8,7 @@ from eveuniverse.models import EveType, EveMarketGroup
 # Django
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import User
 
 
 class General(models.Model):
@@ -33,10 +34,14 @@ class ForSale(models.Model):
         EveType,
         verbose_name=_("EVE Type"),
         on_delete=models.CASCADE,
-        limit_choices_to={"published": 1, "eve_market_group__isnull": False},
+        limit_choices_to={"published": 1},
     )
 
-    description = models.TextField(_("Description"), blank=True)
+    description = models.TextField(
+        _("Description"),
+        blank=True,
+        max_length=4096,
+    )
 
     price = models.DecimalField(
         _("Price"),
@@ -44,3 +49,50 @@ class ForSale(models.Model):
         decimal_places=2,
         help_text=_("Cost per unit"),
     )
+
+
+class Order(models.Model):
+    """
+    An order from a user
+    """
+
+    class OrderStatus(models.IntegerChoices):
+        PENDING = 10, _("Pending")
+        AWAITING_DEPOSIT = 20, _("Awaiting Deposit")
+        BUILDING = 30, _("Building")
+        AWAITING_FINAL_PAYMENT = 40, _("Awaiting Final Payment")
+        DELIVERED = 50, _("Delivered")
+        REJECTED = 60, _("Rejected")
+
+    user = models.ForeignKey(
+        User,
+        verbose_name=_("Purchaser"),
+        on_delete=models.RESTRICT,
+    )
+
+    price = models.DecimalField(
+        _("Price"),
+        max_digits=15,
+        decimal_places=2,
+        help_text=_("Cost per unit"),
+    )
+
+    eve_type = models.ForeignKey(
+        EveType,
+        verbose_name=_("EVE Type"),
+        on_delete=models.CASCADE,
+        limit_choices_to={"published": 1},
+    )
+
+    notes = models.TextField(
+        _("Notes"),
+        max_length=4096,
+    )
+
+    description = models.TextField(
+        _("Description"),
+        blank=True,
+        max_length=4096,
+    )
+
+    status = models.IntegerField(_("Status"), choices=OrderStatus.choices)

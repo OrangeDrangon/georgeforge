@@ -12,7 +12,7 @@ from django.forms.models import ModelChoiceField, ModelMultipleChoiceField
 from django.http import HttpRequest
 
 # George Forge
-from georgeforge.models import ForSale
+from georgeforge.models import ForSale, Order
 
 # Register your models here.
 
@@ -20,4 +20,10 @@ from georgeforge.models import ForSale
 @admin.register(ForSale)
 class ForSaleAdmin(admin.ModelAdmin):
     list_display = ["eve_type", "price", "description"]
+    autocomplete_fields = ["eve_type"]
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ["user", "status", "eve_type", "price", "description", "notes"]
     autocomplete_fields = ["eve_type"]

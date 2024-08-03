@@ -10,4 +10,5 @@ app_name: str = "georgeforge"
 
 urlpatterns = [
     path("", views.store, name="store"),
+    path("order/<int:id>", views.order, name="order")
 ]
