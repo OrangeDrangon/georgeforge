@@ -2,16 +2,14 @@
 # Django
 import django.db.models.deletion
 from django.conf import settings
-from django.db import migrations
-from django.db import models
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
     """ """
 
     dependencies = [
-        ("eveuniverse",
-         "0010_alter_eveindustryactivityduration_eve_type_and_more"),
+        ("eveuniverse", "0010_alter_eveindustryactivityduration_eve_type_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("georgeforge", "0004_alter_forsale_eve_type"),
     ]
@@ -21,10 +19,7 @@ class Migration(migrations.Migration):
             model_name="forsale",
             name="eve_type",
             field=models.ForeignKey(
-                limit_choices_to={
-                    "eve_market_group__isnull": False,
-                    "published": 1
-                },
+                limit_choices_to={"eve_market_group__isnull": False, "published": 1},
                 on_delete=django.db.models.deletion.CASCADE,
                 to="eveuniverse.evetype",
                 verbose_name="EVE Type",

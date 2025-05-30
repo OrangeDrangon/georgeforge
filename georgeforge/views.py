@@ -1,27 +1,26 @@
 """App Views"""
+
 # Standard Library
 import csv
 import logging
 
+# Django
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse
-from django.shortcuts import redirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
-from eveuniverse.models import EveType, EveSolarSystem
 
-from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
-from georgeforge.models import ForSale, Order, DeliverySystem
-# Django
 # Alliance Auth (External Libs)
+from eveuniverse.models import EveSolarSystem, EveType
+
 # George Forge
+from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
+from georgeforge.models import DeliverySystem, ForSale, Order
 
 logger = logging.getLogger(__name__)
 
@@ -88,10 +87,8 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
 
             messages.success(
                 request,
-                _("Successfully ordered %(name)s for %(price)s ISK") % {
-                    "name": for_sale.eve_type.name,
-                    "price": intcomma(for_sale.price)
-                },
+                _("Successfully ordered %(name)s for %(price)s ISK")
+                % {"name": for_sale.eve_type.name, "price": intcomma(for_sale.price)},
             )
 
             return redirect("georgeforge:store")
@@ -107,33 +104,32 @@ def all_orders(request: WSGIRequest) -> HttpResponse:
     """Order Management handler/view
 
     :param request: WSGIRequest:
-    
+
     """
     if request.method == "POST":
-        pk = int(request.POST.get('id'))
+        pk = int(request.POST.get("id"))
         if pk < 1:
-            messages.error(request,
-                message=_("Not a valid order")
-            )
-        paid = float(request.POST.get('paid').strip(','))
+            messages.error(request, message=_("Not a valid order"))
+        paid = float(request.POST.get("paid").strip(","))
         if float(paid) < 0.00:
-            messages.error(request,
-                message=_("Negative payment")
-            )
-        status = int(request.POST.get('status'))
+            messages.error(request, message=_("Negative payment"))
+        status = int(request.POST.get("status"))
         if status not in dict(Order.OrderStatus.choices).keys():
-            messages.error(request,
-                message=_("Not a valid status")
-            )
-        system = EveSolarSystem.objects.get(id=int(request.POST.get('system')))
-        Order.objects.filter(pk=pk).update(paid=paid,status=status,deliverysystem=system)
-
+            messages.error(request, message=_("Not a valid status"))
+        system = EveSolarSystem.objects.get(id=int(request.POST.get("system")))
+        Order.objects.filter(pk=pk).update(
+            paid=paid, status=status, deliverysystem=system
+        )
 
     orders = Order.objects.select_related().all()
     dsystems = []
     for x in DeliverySystem.objects.select_related().all():
         dsystems.append([x.system.id, x.friendly])
-    context = {"all_orders": orders, "status": Order.OrderStatus.choices, "dsystems":dsystems}
+    context = {
+        "all_orders": orders,
+        "status": Order.OrderStatus.choices,
+        "dsystems": dsystems,
+    }
 
     return render(request, "georgeforge/views/all_orders.html", context)
 
@@ -151,9 +147,7 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
 
         if form.is_valid():
             data = form.cleaned_data["data"]
-            parsed = [
-                row for row in csv.DictReader(data.splitlines())
-            ]
+            parsed = [row for row in csv.DictReader(data.splitlines())]
 
             ForSale.objects.all().delete()
 
@@ -167,22 +161,21 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
                         eve_type=eve_type,
                         description=item["Description"],
                         price=item["Price"],
-                        deposit=item["Deposit"]
+                        deposit=item["Deposit"],
                     )
                 except ObjectDoesNotExist:
                     messages.warning(
                         request,
-                        _("%(name)s does not exist and was not added") %
-                        {"name": item["Item Name"]},
+                        _("%(name)s does not exist and was not added")
+                        % {"name": item["Item Name"]},
                     )
                     had_error += 1
                 except ValidationError as ex:
                     messages.warning(
                         request,
-                        _("%(name)s had a validation error: %(error)s") % {
-                            "name": item["Item Name"],
-                            "error": ex.message
-                        } % ex.params,
+                        _("%(name)s had a validation error: %(error)s")
+                        % {"name": item["Item Name"], "error": ex.message}
+                        % ex.params,
                     )
                     had_error += 1
 
@@ -191,10 +184,8 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
             if imported > 0:
                 messages.success(
                     request,
-                    _("Imported %(n)s item%(plural)s") % {
-                        "n": imported,
-                        "plural": pluralize(imported)
-                    },
+                    _("Imported %(n)s item%(plural)s")
+                    % {"n": imported, "plural": pluralize(imported)},
                 )
 
             return redirect("georgeforge:bulk_import_form")
@@ -218,7 +209,9 @@ def export_offers(request: WSGIRequest) -> HttpResponse:
     )
 
     writer = csv.writer(response)
-    writer.writerow(["Item Name","Description","Price","Deposit"])
+    writer.writerow(["Item Name", "Description", "Price", "Deposit"])
     for listing in ForSale.objects.all():
-        writer.writerow([listing.eve_type.name, listing.description, listing.price, listing.deposit])
+        writer.writerow(
+            [listing.eve_type.name, listing.description, listing.price, listing.deposit]
+        )
     return response

@@ -2,8 +2,8 @@
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from georgeforge import __title__
 # George Forge
+from georgeforge import __title__
 
 # Eve Category IDs
 MATERIAL = 4
@@ -27,6 +27,7 @@ SKINS = 91
 
 class Command(BaseCommand):
     """ """
+
     help = "Preloads data required for this app from ESI"
 
     def handle(self, *args, **options):
@@ -54,7 +55,4 @@ class Command(BaseCommand):
             "--category_id",
             str(STRUCTURE_MODULE),
         )
-        call_command(
-            "eveuniverse_load_data",
-            "map"
-        )
+        call_command("eveuniverse_load_data", "map")

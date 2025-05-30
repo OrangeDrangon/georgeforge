@@ -1,14 +1,15 @@
 """
 App Models
 """
+
 # Django
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from eveuniverse.models import EveMarketGroup
-from eveuniverse.models import EveSolarSystem
-from eveuniverse.models import EveType
+
 # Alliance Auth (External Libs)
+from eveuniverse.models import EveSolarSystem, EveType
+
 # Eve Universe
 
 
@@ -57,6 +58,7 @@ class ForSale(models.Model):
         help_text=_("Deposit per unit"),
     )
 
+
 class DeliverySystem(models.Model):
     """A SolarSystem Available for orders to be delivered to"""
 
@@ -84,11 +86,13 @@ class DeliverySystem(models.Model):
             return f"{self.system.name} - {self.friendly_name}"
         return self.system.name
 
+
 class Order(models.Model):
     """An order from a user"""
 
     class OrderStatus(models.IntegerChoices):
         """ """
+
         PENDING = 10, _("Pending")
         AWAITING_DEPOSIT = 20, _("Awaiting Deposit")
         BUILDING = 30, _("Building")
