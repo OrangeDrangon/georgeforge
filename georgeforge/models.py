@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from eveuniverse.models import EveMarketGroup
+from eveuniverse.models import EveSolarSystem
 from eveuniverse.models import EveType
 # Alliance Auth (External Libs)
 # Eve Universe
@@ -56,6 +57,32 @@ class ForSale(models.Model):
         help_text=_("Deposit per unit"),
     )
 
+class DeliverySystem(models.Model):
+    """A SolarSystem Available for orders to be delivered to"""
+
+    system = models.ForeignKey(
+        EveSolarSystem,
+        verbose_name=_("Solar System"),
+        on_delete=models.CASCADE,
+    )
+
+    friendly_name = models.TextField(
+        _("Friendly Name"),
+        max_length=32,
+        default=None,
+        null=True,
+        blank=True,
+    )
+
+    enabled = models.BooleanField(
+        default=True,
+    )
+
+    @property
+    def friendly(self):
+        if self.friendly_name:
+            return f"{self.system.name} - {self.friendly_name}"
+        return self.system.name
 
 class Order(models.Model):
     """An order from a user"""
@@ -107,6 +134,12 @@ class Order(models.Model):
         _("Description"),
         blank=True,
         max_length=4096,
+    )
+
+    deliverysystem = models.ForeignKey(
+        EveSolarSystem,
+        verbose_name=_("Delivery System"),
+        on_delete=models.CASCADE,
     )
 
     status = models.IntegerField(_("Status"), choices=OrderStatus.choices)

@@ -15,11 +15,10 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
-from eveuniverse.models import EveType
+from eveuniverse.models import EveType, EveSolarSystem
 
 from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
-from georgeforge.models import ForSale
-from georgeforge.models import Order
+from georgeforge.models import ForSale, Order, DeliverySystem
 # Django
 # Alliance Auth (External Libs)
 # George Forge
@@ -75,6 +74,7 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
 
         if form.is_valid():
             notes = form.cleaned_data["notes"]
+            system = form.cleaned_data["delivery"].system
 
             Order.objects.create(
                 user=request.user,
@@ -83,6 +83,7 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
                 notes=notes,
                 description=for_sale.description,
                 status=Order.OrderStatus.PENDING,
+                deliverysystem=system,
             )
 
             messages.success(
@@ -124,11 +125,15 @@ def all_orders(request: WSGIRequest) -> HttpResponse:
             messages.error(request,
                 message=_("Not a valid status")
             )
-        order = Order.objects.filter(pk=pk).update(paid=paid,status=status)
+        system = EveSolarSystem.objects.get(id=int(request.POST.get('system')))
+        Order.objects.filter(pk=pk).update(paid=paid,status=status,deliverysystem=system)
 
 
     orders = Order.objects.select_related().all()
-    context = {"all_orders": orders, "status": Order.OrderStatus.choices}
+    dsystems = []
+    for x in DeliverySystem.objects.select_related().all():
+        dsystems.append([x.system.id, x.friendly])
+    context = {"all_orders": orders, "status": Order.OrderStatus.choices, "dsystems":dsystems}
 
     return render(request, "georgeforge/views/all_orders.html", context)
 

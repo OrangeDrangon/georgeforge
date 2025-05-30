@@ -1,9 +1,14 @@
 # Django
 from django import forms
 from django.utils.translation import gettext_lazy as _
+from django.forms import ModelChoiceField
 
-from georgeforge.models import Order
+from georgeforge.models import DeliverySystem
 
+
+class SystemChoiceField(ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.friendly
 
 class StoreOrderForm(forms.Form):
     """ """
@@ -13,6 +18,10 @@ class StoreOrderForm(forms.Form):
         empty_value="",
         max_length=4096,
         widget=forms.Textarea(attrs={"rows": "5"}),
+    )
+
+    delivery = SystemChoiceField(
+        queryset=DeliverySystem.objects.filter(enabled=True).all(),
     )
 
 

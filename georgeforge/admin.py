@@ -13,6 +13,7 @@ from eveuniverse.models import EveMarketGroup
 from eveuniverse.models import EveType
 
 from georgeforge.models import ForSale
+from georgeforge.models import DeliverySystem
 from georgeforge.models import Order
 # Django
 # Alliance Auth (External Libs)
@@ -25,9 +26,14 @@ from georgeforge.models import Order
 @admin.register(ForSale)
 class ForSaleAdmin(admin.ModelAdmin):
     """ """
-    list_display = ["eve_type", "price", "description"]
+    list_display = ["eve_type", "description", "deposit", "price"]
     autocomplete_fields = ["eve_type"]
 
+@admin.register(DeliverySystem)
+class DeliverySystemAdmin(admin.ModelAdmin):
+    """ """
+    list_display = ["system", "enabled", "friendly_name"]
+    autocomplete_fields = ["system"]
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):

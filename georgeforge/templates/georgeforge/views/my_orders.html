@@ -8,6 +8,7 @@
       <tr>
         <th scope="col">Order ID</th>
         <th scope="col">Item</th>
+        <th scope="col">Delivery System</th>
         <th scope="col">Paid</th>
         <th scope="col">Status</th>
       </tr>
@@ -20,6 +21,7 @@
                   src="{{ entry.eve_type.icon_url }}"
                   alt="{% translate "Item Icon" %}" />
             {{ entry.eve_type.name }}</td>
+        <td>{{ entry.deliverysystem.name }}</td>
         <td>{{ entry.paid|intcomma }}/{{ entry.price|intcomma }} ISK</td>
         <td>{{ entry.get_status_display }}</td>
       </tr>
