@@ -3,6 +3,10 @@
 {% load humanize %}
 {% load static %}
 {% block details %}
+    <form method="get"
+          action="{% url 'georgeforge:export_offers' %}">
+          <input class="btn btn-primary" type="submit" value="Download CSV">
+    </form>
     <form class="m-3"
           method="post"
           id="order-form"

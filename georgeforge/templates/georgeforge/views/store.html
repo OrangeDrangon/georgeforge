@@ -6,24 +6,31 @@
     <ul class="list-group">
         {% for entry in for_sale %}
             <li class="list-group-item d-flex flex-row align-items-center justify-content-start">
-                <div class="d-flex flex-column">
-                    <div>
-                        <span>
-                            <img height="64"
-                                 width="64"
-                                 src="{{ entry.eve_type.icon_url }}"
-                                 alt="{% translate "Item Icon" %}" />
-                        </span>
-                        <span>{{ entry.eve_type.name }}</span>
-                        <span> - </span>
-                        <span>{{ entry.price|intcomma }} ISK</span>
-                    </div>
-                    <div>
-                        <span>{{ entry.description|safe }}</span>
-                    </div>
+                <div class="p-2">
+                    <span>
+                        <img height="64"
+                              width="64"
+                              src="{{ entry.eve_type.icon_url }}"
+                              alt="{% translate "Item Icon" %}" />
+                    </span>
+                    <span>{{ entry.eve_type.name }}</span>
                 </div>
-                <div class="flex-grow-1"></div>
-                <div class="d-flex flex-column align-items-center">
+                <div class="p-2 flex-grow-1">
+                    <span>{{ entry.description|safe }}</span>
+                </div>
+                <div class="p-2 text-start">
+                    <span>Cost:</span><br />
+                    {% if entry.deposit %}
+                    <span>Deposit:</span>
+                    {% endif %}
+                </div>
+                <div class="p-2 text-end">
+                    <span>{{ entry.price|intcomma }} ISK</span><br />
+                    {% if entry.deposit %}
+                    <span>{{ entry.deposit|intcomma }} ISK</span>
+                    {% endif %}
+                </div>
+                <div class="p-2">
                     <a class="btn btn-primary" href="{% url 'georgeforge:store_order_form' entry.id %}">Order</a>
                 </div>
             </li>

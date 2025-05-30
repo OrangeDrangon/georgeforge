@@ -15,7 +15,7 @@
     <tbody>
  {% for entry in my_orders %}
       <tr>
-        <th scope="row">1</th>
+        <th scope="row">{{ entry.id }}</th>
         <td><img  height="24" width="24"
                   src="{{ entry.eve_type.icon_url }}"
                   alt="{% translate "Item Icon" %}" />

@@ -2,6 +2,8 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from georgeforge.models import Order
+
 
 class StoreOrderForm(forms.Form):
     """ """
@@ -17,10 +19,10 @@ class StoreOrderForm(forms.Form):
 class BulkImportStoreItemsForm(forms.Form):
     """ """
     data = forms.CharField(
-        label="Data",
-        empty_value="",
+        label="CSV Paste",
+        empty_value="Item Name,Description,Price,Deposit",
         widget=forms.Textarea(attrs={
-            "rows": "5",
-            "placeholder": "Item Name,Price,Description,Deposit"
+            "rows": "15",
+            "placeholder": "Item Name,Description,Price,Deposit"
         }),
     )
