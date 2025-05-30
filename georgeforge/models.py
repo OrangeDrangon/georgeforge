@@ -48,6 +48,14 @@ class ForSale(models.Model):
         help_text=_("Cost per unit"),
     )
 
+    deposit = models.DecimalField(
+        _("Deposit"),
+        default=0,
+        max_digits=15,
+        decimal_places=2,
+        help_text=_("Deposit per unit"),
+    )
+
 
 class Order(models.Model):
     """An order from a user"""
@@ -74,6 +82,14 @@ class Order(models.Model):
         help_text=_("Cost per unit"),
     )
 
+    paid = models.DecimalField(
+        _("Amount Paid"),
+        default=0,
+        max_digits=15,
+        decimal_places=2,
+        help_text=_("Amount paid"),
+    )
+
     eve_type = models.ForeignKey(
         EveType,
         verbose_name=_("EVE Type"),
@@ -83,6 +99,7 @@ class Order(models.Model):
 
     notes = models.TextField(
         _("Notes"),
+        blank=True,
         max_length=4096,
     )
 

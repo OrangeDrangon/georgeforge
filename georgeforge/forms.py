@@ -21,6 +21,6 @@ class BulkImportStoreItemsForm(forms.Form):
         empty_value="",
         widget=forms.Textarea(attrs={
             "rows": "5",
-            "placeholder": "Item Name,Price,Description"
+            "placeholder": "Item Name,Price,Description,Deposit"
         }),
     )

@@ -12,5 +12,6 @@ urlpatterns = [
     path("store/order/<int:id>",
          views.store_order_form,
          name="store_order_form"),
+    path("my_orders", views.my_orders, name="my_orders"),
     path("bulk_import_form", views.bulk_import_form, name="bulk_import_form"),
 ]

@@ -46,6 +46,22 @@ def store(request: WSGIRequest) -> HttpResponse:
 
 @login_required
 @permission_required("georgeforge.place_order")
+def my_orders(request: WSGIRequest) -> HttpResponse:
+    """My Orders view
+
+    :param request: WSGIRequest:
+
+    """
+
+    my_orders = Order.objects.select_related().all()
+
+    context = {"my_orders": my_orders}
+
+    return render(request, "georgeforge/views/my_orders.html", context)
+
+
+@login_required
+@permission_required("georgeforge.place_order")
 def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
     """Place order for a specific ship
 
@@ -101,7 +117,7 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
             parsed = [
                 row for row in csv.DictReader(data.splitlines(),
                                               fieldnames=("name", "price",
-                                                          "description"))
+                                                          "description", "deposit"))
             ]
 
             ForSale.objects.all().delete()

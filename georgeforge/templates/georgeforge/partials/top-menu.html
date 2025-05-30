@@ -4,6 +4,10 @@
     <a class="nav-link {% navactive request 'georgeforge:store' %}"
        href="{% url 'georgeforge:store' %}">{% translate "Store" %}</a>
 </li>
+<li class="nav-item">
+    <a class="nav-link {% navactive request 'georgeforge:my_orders' %}"
+       href="{% url 'georgeforge:my_orders' %}">{% translate "My Orders" %}</a>
+</li>
 {% if perms.georgeforge.manage_store %}
     <li class="nav-item">
         <a class="nav-link {% navactive request 'georgeforge:bulk_import_form' %}"
