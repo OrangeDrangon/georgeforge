@@ -3,34 +3,25 @@
 {% load humanize %}
 {% load static %}
 {% block details %}
-    <h1 class="fs-2">
-        <img height="64"
-             width="64"
-             src="{{ for_sale.eve_type.icon_url }}"
-             alt="{% translate "Ship Image" %}" />
-        {{ for_sale.eve_type.name }}
-    </h1>
-    <h3>
-      Cost: {{ for_sale.price|intcomma }} ISK<br />
-      Deposit: {{ for_sale.deposit|intcomma }} ISK
-    </h3>
-    <div>{{ for_sale.description }}</div>
-    <form class="m-3"
-          method="post"
-          id="order-form"
-          action="{% url 'georgeforge:store_order_form' for_sale.id %}">
-        {% csrf_token %}
-        {{ form }}
-        <input class="btn btn-primary" type="submit" value="Submit Order">
-    </form>
+<h1 class="fs-2">
+    <img height="64" width="64" src="{{ for_sale.eve_type.icon_url }}" alt="{% translate " Ship Image" %}" />
+    {{ for_sale.eve_type.name }}
+</h1>
+<h3>
+    Cost: {{ for_sale.price|intcomma }} ISK<br />
+    Deposit: {{ for_sale.deposit|intcomma }} ISK
+</h3>
+<div>{{ for_sale.description }}</div>
+<form class="m-3" method="post" id="order-form" action="{% url 'georgeforge:store_order_form' for_sale.id %}">
+    {% csrf_token %}
+    {{ form }}
+    <input class="btn btn-primary" type="submit" value="Submit Order">
+</form>
 {% endblock details %}
 {% block extra_javascript %}
 {% endblock extra_javascript %}
 {% block extra_css %}
-    <link rel="stylesheet"
-          href="{% static 'georgeforge/css/store_order_form.css' %}"
-          type="text/css"
-          media="screen" />
+<link rel="stylesheet" href="{% static 'georgeforge/css/store_order_form.css' %}" type="text/css" media="screen" />
 {% endblock extra_css %}
 {% block extra_script %}
 {% endblock extra_script %}

@@ -1,7 +1,7 @@
 """Admin models"""
 
 # Django
-from django.contrib import admin  # noqa: F401
+from django.contrib import admin
 
 # George Forge
 from georgeforge.models import DeliverySystem, ForSale, Order

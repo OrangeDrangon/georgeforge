@@ -3,60 +3,56 @@
 {% load humanize %}
 {% load static %}
 {% block details %}
-  <table class="table">
+<table class="table">
     <thead>
-      <tr>
-        <th scope="col">Order ID</th>
-        <th scope="col">Character</th>
-        <th scope="col">Item</th>
-        <th scope="col">Paid</th>
-        <th scope="col">System</th>
-        <th scope="col">Status</th>
-        <th scope="col"></th>
-      </tr>
+        <tr>
+            <th scope="col">Order ID</th>
+            <th scope="col">Character</th>
+            <th scope="col">Item</th>
+            <th scope="col">Paid</th>
+            <th scope="col">System</th>
+            <th scope="col">Status</th>
+            <th scope="col"></th>
+        </tr>
     </thead>
     <tbody>
- {% for entry in all_orders %}
-      <form method="post"
-            id="{{ entry.id }}"
-            action="{% url 'georgeforge:all_orders' %}">
-      <input type="hidden" name="id" value="{{ entry.id }}">{% csrf_token %}
-      <tr>
-        <th scope="row">{{ entry.id }}</th>
-        <td>{{ entry.user.profile.main_character.character_name }}</td>
-        <td><img  height="24" width="24"
-                  src="{{ entry.eve_type.icon_url }}"
-                  alt="{% translate 'Item Icon' %}" />
-            {{ entry.eve_type.name }}</td>
-        <td><input type="text" id="paid" name="paid" value="{{ entry.paid|intcomma }}">/{{ entry.price|intcomma }} ISK</td>
-        <td>
-          <select id="system" name="system">
-          {% for id,name in dsystems %}
-            <option value="{{ id }}"{% if entry.deliverysystem_id == id %} selected="true"{% endif %}>{{ name }}</option>
-          {% endfor %}
-          </select>
-        </td>
-        <td>
-          <select id="status" name="status">
-          {% for code,name in status %}
-            <option value="{{ code }}"{% if entry.status == code %} selected="true"{% endif %}>{{ name }}</option>
-          {% endfor %}
-          </select>
-        </td>
-        <td><input class="btn btn-primary" type="submit" value="Update"></td>
-      </tr>
-    </form>
-  {% endfor %}
+        {% for entry in all_orders %}
+        <form method="post" id="{{ entry.id }}" action="{% url 'georgeforge:all_orders' %}">
+            <input type="hidden" name="id" value="{{ entry.id }}">{% csrf_token %}
+            <tr>
+                <th scope="row">{{ entry.id }}</th>
+                <td>{{ entry.user.profile.main_character.character_name }}</td>
+                <td><img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate 'Item Icon' %}" />
+                    {{ entry.eve_type.name }}</td>
+                <td><input type="text" id="paid" name="paid" value="{{ entry.paid|intcomma }}">/{{ entry.price|intcomma
+                    }} ISK</td>
+                <td>
+                    <select id="system" name="system">
+                        {% for id,name in dsystems %}
+                        <option value="{{ id }}" {% if entry.deliverysystem_id==id %} selected="true" {% endif %}>{{
+                            name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select id="status" name="status">
+                        {% for code,name in status %}
+                        <option value="{{ code }}" {% if entry.status==code %} selected="true" {% endif %}>{{ name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input class="btn btn-primary" type="submit" value="Update"></td>
+            </tr>
+        </form>
+        {% endfor %}
     </tbody>
-  </table>
+</table>
 {% endblock details %}
 {% block extra_javascript %}
 {% endblock extra_javascript %}
 {% block extra_css %}
-    <link rel="stylesheet"
-          href="{% static 'georgeforge/css/store.css' %}"
-          type="text/css"
-          media="screen" />
+<link rel="stylesheet" href="{% static 'georgeforge/css/store.css' %}" type="text/css" media="screen" />
 {% endblock extra_css %}
 {% block extra_script %}
 {% endblock extra_script %}
