@@ -21,6 +21,7 @@ from eveuniverse.models import EveSolarSystem, EveType
 # George Forge
 from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
 from georgeforge.models import DeliverySystem, ForSale, Order
+from georgeforge.tasks import send_statusupdate_dm, send_update_to_webhook
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +51,18 @@ def my_orders(request: WSGIRequest) -> HttpResponse:
 
     """
 
-    my_orders = Order.objects.select_related().filter(user=request.user)
+    my_orders = (
+        Order.objects.select_related()
+        .filter(user=request.user, status__lt=Order.OrderStatus.DELIVERED)
+        .order_by("id")
+    )
+    done_orders = (
+        Order.objects.select_related()
+        .filter(user=request.user, status__gte=Order.OrderStatus.DELIVERED)
+        .order_by("id")
+    )
 
-    context = {"my_orders": my_orders}
+    context = {"my_orders": my_orders, "done_orders": done_orders}
 
     return render(request, "georgeforge/views/my_orders.html", context)
 
@@ -85,6 +95,10 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
                 deliverysystem=system,
             )
 
+            send_update_to_webhook(
+                f"New Order from {request.user.profile.main_character.character_name}: 1 {for_sale.eve_type.name}"
+            )
+
             messages.success(
                 request,
                 _("Successfully ordered %(name)s for %(price)s ISK")
@@ -107,26 +121,46 @@ def all_orders(request: WSGIRequest) -> HttpResponse:
 
     """
     if request.method == "POST":
-        pk = int(request.POST.get("id"))
-        if pk < 1:
-            messages.error(request, message=_("Not a valid order"))
+        id = int(request.POST.get("id"))
+        if id >= 1:
+            try:
+                order = Order.objects.filter(id=id).get()
+            except IndexError:
+                messages.error(request, message=_("Not a valid order"))
         paid = float(request.POST.get("paid").strip(","))
         if float(paid) < 0.00:
             messages.error(request, message=_("Negative payment"))
         status = int(request.POST.get("status"))
         if status not in dict(Order.OrderStatus.choices).keys():
             messages.error(request, message=_("Not a valid status"))
-        system = EveSolarSystem.objects.get(id=int(request.POST.get("system")))
-        Order.objects.filter(pk=pk).update(
-            paid=paid, status=status, deliverysystem=system
-        )
+        deliverysystem = EveSolarSystem.objects.get(id=int(request.POST.get("system")))
+        order.paid = paid
+        old_status = order.status
+        order.status = status
+        order.deliverysystem = deliverysystem
+        order.save()
 
-    orders = Order.objects.select_related().all()
+        messages.success(request, f"Order ID {id} updated!")
+
+        if order.status != old_status:
+            send_statusupdate_dm(order)
+
+    orders = (
+        Order.objects.select_related()
+        .filter(status__lt=Order.OrderStatus.DELIVERED)
+        .order_by("id")
+    )
+    done_orders = (
+        Order.objects.select_related()
+        .filter(status__gte=Order.OrderStatus.DELIVERED)
+        .order_by("id")
+    )
     dsystems = []
     for x in DeliverySystem.objects.select_related().all():
         dsystems.append([x.system.id, x.friendly])
     context = {
         "all_orders": orders,
+        "done_orders": done_orders,
         "status": Order.OrderStatus.choices,
         "dsystems": dsystems,
     }

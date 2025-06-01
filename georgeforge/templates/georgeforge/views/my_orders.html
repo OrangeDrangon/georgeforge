@@ -26,6 +26,30 @@
         {% endfor %}
     </tbody>
 </table>
+<h4>Completed Orders</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Order ID</th>
+            <th scope="col">Item</th>
+            <th scope="col">Delivery System</th>
+            <th scope="col">Paid</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in done_orders %}
+        <tr>
+            <th scope="row">{{ entry.id }}</th>
+            <td><img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
+                {{ entry.eve_type.name }}</td>
+            <td>{{ entry.deliverysystem.name }}</td>
+            <td>{{ entry.paid|intcomma }}/{{ entry.price|intcomma }} ISK</td>
+            <td>{{ entry.get_status_display }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock details %}
 {% block extra_javascript %}
 {% endblock extra_javascript %}

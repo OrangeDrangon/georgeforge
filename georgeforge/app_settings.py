@@ -1,9 +1,11 @@
 """App Settings"""
 
 # Django
-# from django.conf import settings
-
-# put your app settings here
+from django.conf import settings
 
 
-# EXAMPLE_SETTING_ONE = getattr(settings, "EXAMPLE_SETTING_ONE", None)
+def discord_bot_active():
+    return "aadiscordbot" in settings.INSTALLED_APPS
+
+
+INDUSTRY_ADMIN_WEBHOOK = getattr(settings, "INDUSTRY_ADMIN_WEBHOOK", None)

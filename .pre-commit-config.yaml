@@ -162,7 +162,7 @@ repos:
     hooks:
       - id: black
         args:
-          - --target-version=py38  # Minimum required Python version for AA. Update as needed.
+          - --target-version=py310  # Minimum required Python version for AA. Update as needed.
 
   - repo: https://github.com/asottile/blacken-docs
     rev: 1.16.0
@@ -171,7 +171,7 @@ repos:
         additional_dependencies:
           - black==24.3.0  # https://github.com/psf/black/releases/latest
         args:
-          - --target-version=py38  # Minimum required Python version for AA. Update as needed.
+          - --target-version=py310  # Minimum required Python version for AA. Update as needed.
 
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.17
