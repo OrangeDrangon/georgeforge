@@ -4,6 +4,7 @@ App Models
 
 # Django
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -48,6 +49,7 @@ class ForSale(models.Model):
         max_digits=15,
         decimal_places=2,
         help_text=_("Cost per unit"),
+        validators=[MinValueValidator(1)],
     )
 
     deposit = models.DecimalField(
@@ -107,10 +109,17 @@ class Order(models.Model):
     )
 
     price = models.DecimalField(
-        _("Price"),
+        _("Price per unit"),
         max_digits=15,
         decimal_places=2,
         help_text=_("Cost per unit"),
+    )
+
+    deposit = models.DecimalField(
+        _("Deposit required per unit"),
+        max_digits=15,
+        decimal_places=2,
+        help_text=_("Deposit required per unit"),
     )
 
     paid = models.DecimalField(
@@ -126,6 +135,12 @@ class Order(models.Model):
         verbose_name=_("EVE Type"),
         on_delete=models.CASCADE,
         limit_choices_to={"published": 1},
+    )
+
+    quantity = models.IntegerField(
+        _("Quantity"),
+        default=1,
+        validators=[MinValueValidator(1)],
     )
 
     notes = models.TextField(

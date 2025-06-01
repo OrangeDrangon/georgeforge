@@ -23,7 +23,15 @@ class StoreOrderForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": "5"}),
     )
 
+    quantity = forms.IntegerField(
+        label=_("Quantity"),
+        required=True,
+        min_value=1,
+        widget=forms.NumberInput(attrs={"value": 1}),
+    )
+
     delivery = SystemChoiceField(
+        label=_("Delivery System"),
         queryset=DeliverySystem.objects.filter(enabled=True).all(),
     )
 

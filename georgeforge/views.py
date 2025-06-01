@@ -84,28 +84,39 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
         if form.is_valid():
             notes = form.cleaned_data["notes"]
             system = form.cleaned_data["delivery"].system
+            quantity = form.cleaned_data["quantity"]
 
-            Order.objects.create(
-                user=request.user,
-                price=for_sale.price,
-                eve_type=for_sale.eve_type,
-                notes=notes,
-                description=for_sale.description,
-                status=Order.OrderStatus.PENDING,
-                deliverysystem=system,
-            )
+            if quantity >= 1:
+                Order.objects.create(
+                    user=request.user,
+                    price=(for_sale.price * quantity),
+                    deposit=(for_sale.deposit * quantity),
+                    eve_type=for_sale.eve_type,
+                    notes=notes,
+                    description=for_sale.description,
+                    status=Order.OrderStatus.PENDING,
+                    deliverysystem=system,
+                    quantity=quantity,
+                )
 
-            send_update_to_webhook(
-                f"New Order from {request.user.profile.main_character.character_name}: 1 {for_sale.eve_type.name}"
-            )
+                send_update_to_webhook(
+                    f"New Order from {request.user.profile.main_character.character_name}: {quantity} {for_sale.eve_type.name}"
+                )
 
-            messages.success(
-                request,
-                _("Successfully ordered %(name)s for %(price)s ISK")
-                % {"name": for_sale.eve_type.name, "price": intcomma(for_sale.price)},
-            )
+                messages.success(
+                    request,
+                    _("Successfully ordered %(qty)d x %(name)s for %(price)s ISK")
+                    % {
+                        "qty": quantity,
+                        "name": for_sale.eve_type.name,
+                        "price": intcomma(for_sale.price * quantity),
+                    },
+                )
 
-            return redirect("georgeforge:store")
+                return redirect("georgeforge:store")
+            else:
+                messages.error(request, _("Minimum quantity 1"))
+                return redirect("georgeforge:store")
 
     context = {"for_sale": for_sale, "form": StoreOrderForm()}
 
@@ -122,28 +133,44 @@ def all_orders(request: WSGIRequest) -> HttpResponse:
     """
     if request.method == "POST":
         id = int(request.POST.get("id"))
+        paid = float(request.POST.get("paid").strip(","))
+        status = int(request.POST.get("status"))
+        quantity = int(request.POST.get("quantity"))
+
         if id >= 1:
             try:
                 order = Order.objects.filter(id=id).get()
             except IndexError:
                 messages.error(request, message=_("Not a valid order"))
-        paid = float(request.POST.get("paid").strip(","))
+                return redirect("georgeforge:all_orders")
+
         if float(paid) < 0.00:
             messages.error(request, message=_("Negative payment"))
-        status = int(request.POST.get("status"))
+            return redirect("georgeforge:all_orders")
+
         if status not in dict(Order.OrderStatus.choices).keys():
             messages.error(request, message=_("Not a valid status"))
+            return redirect("georgeforge:all_orders")
+
+        if quantity < 1:
+            messages.error(request, message=_("Cannot order 0 of things!"))
+            return redirect("georgeforge:all_orders")
+
         deliverysystem = EveSolarSystem.objects.get(id=int(request.POST.get("system")))
         order.paid = paid
         old_status = order.status
         order.status = status
         order.deliverysystem = deliverysystem
+        order.quantity = quantity
+        order.price = order.price * quantity
         order.save()
 
         messages.success(request, f"Order ID {id} updated!")
 
         if order.status != old_status:
             send_statusupdate_dm(order)
+
+        return redirect("georgeforge:all_orders")
 
     orders = (
         Order.objects.select_related()

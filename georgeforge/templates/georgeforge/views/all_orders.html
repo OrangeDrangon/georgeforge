@@ -22,10 +22,11 @@
             <tr>
                 <th scope="row">{{ entry.id }}</th>
                 <td>{{ entry.user.profile.main_character.character_name }}</td>
-                <td><img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate 'Item Icon' %}" />
+                <td><input type="number" style="width: 50px" name="quantity" min="1" value="{{ entry.quantity }}" required> x
+                    <img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate 'Item Icon' %}" />
                     {{ entry.eve_type.name }}</td>
-                <td><input type="text" id="paid" name="paid" value="{{ entry.paid|intcomma }}">/
-                    {{ entry.price|intcomma }} ISK</td>
+                <td><input type="number" min="0.0" step="0.01" id="paid" name="paid" value="{{ entry.paid }}" required>/
+                    {{ entry.price|intcomma }} ISK{% if entry.deposit > entry.paid %} (Deposit: {{ entry.deposit|intcomma }} ISK){% endif %}</td>
                 <td>
                     <select id="system" name="system">
                         {% for id,name in dsystems %}
@@ -65,7 +66,8 @@
         <tr>
             <th scope="row">{{ entry.id }}</th>
             <td>{{ entry.user.profile.main_character.character_name }}</td>
-            <td><img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
+            <td>{{ entry.quantity }} x
+                <img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
                 {{ entry.eve_type.name }}</td>
             <td>{{ entry.deliverysystem.name }}</td>
             <td>{{ entry.paid|intcomma }}/{{ entry.price|intcomma }} ISK</td>

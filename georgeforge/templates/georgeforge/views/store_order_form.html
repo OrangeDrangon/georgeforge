@@ -2,19 +2,19 @@
 {% load i18n %}
 {% load humanize %}
 {% load static %}
+{% load django_bootstrap5 %}
 {% block details %}
 <h1 class="fs-2">
     <img height="64" width="64" src="{{ for_sale.eve_type.icon_url }}" alt="{% translate " Ship Image" %}" />
     {{ for_sale.eve_type.name }}
 </h1>
-<h3>
-    Cost: {{ for_sale.price|intcomma }} ISK<br />
-    Deposit: {{ for_sale.deposit|intcomma }} ISK
-</h3>
+<span>
+    Price per unit: {{ for_sale.price|intcomma }} ISK{% if for_sale.deposit > 0 %} With {{ for_sale.deposit|intcomma }} ISK Deposit{% endif %}
+</span>
 <div>{{ for_sale.description }}</div>
 <form class="m-3" method="post" id="order-form" action="{% url 'georgeforge:store_order_form' for_sale.id %}">
     {% csrf_token %}
-    {{ form }}
+    {% bootstrap_form form %}
     <input class="btn btn-primary" type="submit" value="Submit Order">
 </form>
 {% endblock details %}

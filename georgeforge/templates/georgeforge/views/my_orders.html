@@ -17,10 +17,11 @@
         {% for entry in my_orders %}
         <tr>
             <th scope="row">{{ entry.id }}</th>
-            <td><img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
+            <td>{{ entry.quantity }} x
+                <img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
                 {{ entry.eve_type.name }}</td>
             <td>{{ entry.deliverysystem.name }}</td>
-            <td>{{ entry.paid|intcomma }}/{{ entry.price|intcomma }} ISK</td>
+            <td>{{ entry.paid|intcomma }}/{{ entry.price|intcomma }} ISK{% if entry.deposit > entry.paid and entry.status == 20 %} <b>Deposit due: {{ entry.deposit|intcomma }} ISK</b>{% endif %}</td>
             <td>{{ entry.get_status_display }}</td>
         </tr>
         {% endfor %}
@@ -41,7 +42,8 @@
         {% for entry in done_orders %}
         <tr>
             <th scope="row">{{ entry.id }}</th>
-            <td><img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
+            <td>{{ entry.quantity }} x
+                <img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
                 {{ entry.eve_type.name }}</td>
             <td>{{ entry.deliverysystem.name }}</td>
             <td>{{ entry.paid|intcomma }}/{{ entry.price|intcomma }} ISK</td>
