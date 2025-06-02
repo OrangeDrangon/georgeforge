@@ -99,7 +99,7 @@ class Order(models.Model):
         AWAITING_DEPOSIT = 20, _("Awaiting Deposit")
         BUILDING_PARTS = 30, _("Building Parts")
         BUILDING_HULL = 35, _("Building Hull")
-        AWAITING_FINAL_PAYMENT = 40, _("Awaiting Final Payment")
+        AWAITING_FINAL_PAYMENT = 40, _("Contract Up")
         DELIVERED = 50, _("Delivered")
         REJECTED = 60, _("Rejected")
 
