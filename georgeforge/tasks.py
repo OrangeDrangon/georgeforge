@@ -49,7 +49,9 @@ def send_statusupdate_dm(order):
                 c = Color.blue()
             case Order.OrderStatus.AWAITING_DEPOSIT:
                 c = Color.purple()
-            case Order.OrderStatus.BUILDING:
+            case Order.OrderStatus.BUILDING_PARTS:
+                c = Color.orange()
+            case Order.OrderStatus.BUILDING_HULL:
                 c = Color.orange()
             case Order.OrderStatus.AWAITING_FINAL_PAYMENT:
                 c = Color.purple()

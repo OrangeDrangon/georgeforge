@@ -97,7 +97,8 @@ class Order(models.Model):
 
         PENDING = 10, _("Pending")
         AWAITING_DEPOSIT = 20, _("Awaiting Deposit")
-        BUILDING = 30, _("Building")
+        BUILDING_PARTS = 30, _("Building Parts")
+        BUILDING_HULL = 35, _("Building Hull")
         AWAITING_FINAL_PAYMENT = 40, _("Awaiting Final Payment")
         DELIVERED = 50, _("Delivered")
         REJECTED = 60, _("Rejected")

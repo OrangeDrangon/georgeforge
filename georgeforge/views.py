@@ -4,6 +4,9 @@
 import csv
 import logging
 
+# Third Party
+from discord import Color
+
 # Django
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -21,7 +24,11 @@ from eveuniverse.models import EveSolarSystem, EveType
 # George Forge
 from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
 from georgeforge.models import DeliverySystem, ForSale, Order
-from georgeforge.tasks import send_statusupdate_dm, send_update_to_webhook
+from georgeforge.tasks import (
+    send_discord_dm,
+    send_statusupdate_dm,
+    send_update_to_webhook,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +108,14 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
                 )
 
                 send_update_to_webhook(
-                    f"New Order from {request.user.profile.main_character.character_name}: {quantity} {for_sale.eve_type.name}"
+                    f"<@&610206372079861780> New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}, Submitted By: {request.user.profile.main_character.character_name}"
+                )
+
+                send_discord_dm(
+                    request.user,
+                    f"Order Created: {for_sale.eve_type.name}",
+                    f"New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}",
+                    Color.green(),
                 )
 
                 messages.success(
