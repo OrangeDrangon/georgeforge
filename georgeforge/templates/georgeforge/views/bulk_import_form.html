@@ -2,13 +2,14 @@
 {% load i18n %}
 {% load humanize %}
 {% load static %}
+{% load django_bootstrap5 %}
 {% block details %}
 <form method="get" action="{% url 'georgeforge:export_offers' %}">
     <input class="btn btn-primary" type="submit" value="Download CSV">
 </form>
 <form class="m-3" method="post" id="order-form" action="{% url 'georgeforge:bulk_import_form' %}">
     {% csrf_token %}
-    {{ form }}
+    {% bootstrap_form form %}
     <input class="btn btn-primary" type="submit">
 </form>
 {% endblock details %}

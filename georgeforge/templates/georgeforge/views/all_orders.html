@@ -26,7 +26,7 @@
                     <img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate 'Item Icon' %}" />
                     {{ entry.eve_type.name }}</td>
                 <td><input type="number" min="0.0" step="0.01" id="paid" name="paid" value="{{ entry.paid }}" required>/
-                    {{ entry.price|intcomma }} ISK{% if entry.deposit > entry.paid %} (Deposit: {{ entry.deposit|intcomma }} ISK){% endif %}</td>
+                    {{ entry.totalcost|intcomma }} ISK{% if entry.deposit > entry.paid %}<br />(Deposit: {{ entry.deposit|intcomma }} ISK){% endif %}</td>
                 <td>
                     <select id="system" name="system">
                         {% for id,name in dsystems %}
@@ -70,7 +70,7 @@
                 <img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
                 {{ entry.eve_type.name }}</td>
             <td>{{ entry.deliverysystem.name }}</td>
-            <td>{{ entry.paid|intcomma }}/{{ entry.price|intcomma }} ISK</td>
+            <td>{{ entry.paid|intcomma }}/{{ entry.totalcost|intcomma }} ISK</td>
             <td>{{ entry.get_status_display }}</td>
         </tr>
         {% endfor %}

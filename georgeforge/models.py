@@ -115,6 +115,13 @@ class Order(models.Model):
         help_text=_("Cost per unit"),
     )
 
+    totalcost = models.DecimalField(
+        _("Total Order cost"),
+        max_digits=15,
+        decimal_places=2,
+        help_text=_("Total Order cost"),
+    )
+
     deposit = models.DecimalField(
         _("Deposit required per unit"),
         max_digits=15,

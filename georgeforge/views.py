@@ -89,7 +89,8 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
             if quantity >= 1:
                 Order.objects.create(
                     user=request.user,
-                    price=(for_sale.price * quantity),
+                    price=for_sale.price,
+                    totalcost=(for_sale.price * quantity),
                     deposit=(for_sale.deposit * quantity),
                     eve_type=for_sale.eve_type,
                     notes=notes,
@@ -162,7 +163,7 @@ def all_orders(request: WSGIRequest) -> HttpResponse:
         order.status = status
         order.deliverysystem = deliverysystem
         order.quantity = quantity
-        order.price = order.price * quantity
+        order.totalcost = order.price * quantity
         order.save()
 
         messages.success(request, f"Order ID {id} updated!")
