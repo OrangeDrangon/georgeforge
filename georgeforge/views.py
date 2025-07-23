@@ -4,9 +4,6 @@
 import csv
 import logging
 
-# Third Party
-from discord import Color
-
 # Django
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -94,7 +91,7 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
             quantity = form.cleaned_data["quantity"]
 
             if quantity >= 1:
-                Order.objects.create(
+                order = Order.objects.create(
                     user=request.user,
                     price=for_sale.price,
                     totalcost=(for_sale.price * quantity),
@@ -110,13 +107,8 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
                 send_update_to_webhook(
                     f"<@&610206372079861780> New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}, Submitted By: {request.user.profile.main_character.character_name}"
                 )
-
-                send_discord_dm(
-                    request.user,
-                    f"Order Created: {for_sale.eve_type.name}",
-                    f"New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}",
-                    Color.green(),
-                )
+                
+                send_statusupdate_dm(order)
 
                 messages.success(
                     request,
@@ -223,8 +215,7 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
 
         if form.is_valid():
             data = form.cleaned_data["data"]
-            parsed = [row for row in csv.DictReader(data.splitlines())]
-
+            parsed = [row for row in csv.DictReader(data.splitlines(), fieldnames=["Item Name", "Description", "Price", "Deposit"])]
             ForSale.objects.all().delete()
 
             had_error = 0

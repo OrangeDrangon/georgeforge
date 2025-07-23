@@ -39,6 +39,7 @@ class Command(BaseCommand):
         """
         call_command(
             "eveuniverse_load_types",
+            "--noinput",
             __title__,
             "--category_id",
             str(SHIP),
@@ -55,4 +56,4 @@ class Command(BaseCommand):
             "--category_id",
             str(STRUCTURE_MODULE),
         )
-        call_command("eveuniverse_load_data", "map")
+        call_command("eveuniverse_load_data", "--noinput", "map")

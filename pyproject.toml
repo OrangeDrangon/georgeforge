@@ -37,6 +37,12 @@ dependencies = [
     "django-eveuniverse<2,>=1",
 ]
 
+[project.optional-dependencies]
+discord = [
+    "discord.py<3,>=2",
+    "allianceauth-discordbot<5,>=4",
+]
+
 [tool.hatch.version]
 path = "georgeforge/__init__.py"
 
