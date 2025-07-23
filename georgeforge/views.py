@@ -39,7 +39,7 @@ def store(request: WSGIRequest) -> HttpResponse:
 
     """
 
-    for_sale = ForSale.objects.select_related().all()
+    for_sale = ForSale.objects.select_related().all().order_by('eve_group_id')
 
     context = {"for_sale": for_sale}
 
@@ -276,7 +276,6 @@ def export_offers(request: WSGIRequest) -> HttpResponse:
     )
 
     writer = csv.writer(response)
-    writer.writerow(["Item Name", "Description", "Price", "Deposit"])
     for listing in ForSale.objects.all():
         writer.writerow(
             [listing.eve_type.name, listing.description, listing.price, listing.deposit]
