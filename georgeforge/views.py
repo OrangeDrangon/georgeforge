@@ -39,7 +39,7 @@ def store(request: WSGIRequest) -> HttpResponse:
 
     """
 
-    for_sale = ForSale.objects.select_related().all().order_by('eve_group_id')
+    for_sale = ForSale.objects.select_related().all().order_by('eve_type__eve_group_id')
 
     context = {"for_sale": for_sale}
 
