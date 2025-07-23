@@ -222,7 +222,7 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
 
             for item in parsed:
                 try:
-                    eve_type = EveType.objects.get(name=item["Item Name"])
+                    eve_type = EveType.objects.exclude(published=False).get(name=item["Item Name"])
 
                     ForSale.objects.create(
                         eve_type=eve_type,
