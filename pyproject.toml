@@ -39,7 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 discord = [
-    "discord.py<3,>=2",
+    "py-cord<3,>=2",
     "allianceauth-discordbot<5,>=4",
 ]
 
