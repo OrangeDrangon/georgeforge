@@ -19,6 +19,7 @@ from django.utils.translation import gettext_lazy as _
 from eveuniverse.models import EveSolarSystem, EveType
 
 # George Forge
+from . import app_settings
 from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
 from georgeforge.models import DeliverySystem, ForSale, Order
 from georgeforge.tasks import (
@@ -222,7 +223,7 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
 
             for item in parsed:
                 try:
-                    eve_type = EveType.objects.exclude(published=False).get(name=item["Item Name"])
+                    eve_type = EveType.objects.filter(eve_group_id__in=app_settings.FORGE_MARKET_GROUPS).get(name=item["Item Name"])
 
                     ForSale.objects.create(
                         eve_type=eve_type,
