@@ -223,7 +223,7 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
 
             for item in parsed:
                 try:
-                    eve_type = EveType.objects.filter(eve_group_id__in=app_settings.FORGE_MARKET_GROUPS).get(name=item["Item Name"])
+                    eve_type = EveType.objects.filter(eve_group__eve_category_id__in=app_settings.FORGE_CATEGORIES).get(name=item["Item Name"])
 
                     ForSale.objects.create(
                         eve_type=eve_type,
