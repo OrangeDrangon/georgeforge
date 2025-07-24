@@ -125,14 +125,14 @@ class Order(models.Model):
 
     totalcost = models.DecimalField(
         _("Total Order cost"),
-        max_digits=15,
+        max_digits=25,
         decimal_places=2,
         help_text=_("Total Order cost"),
     )
 
     deposit = models.DecimalField(
         _("Deposit required per unit"),
-        max_digits=15,
+        max_digits=25,
         decimal_places=2,
         help_text=_("Deposit required per unit"),
     )
@@ -140,7 +140,7 @@ class Order(models.Model):
     paid = models.DecimalField(
         _("Amount Paid"),
         default=0,
-        max_digits=15,
+        max_digits=25,
         decimal_places=2,
         help_text=_("Amount paid"),
     )
@@ -152,7 +152,7 @@ class Order(models.Model):
         limit_choices_to={"published": 1},
     )
 
-    quantity = models.IntegerField(
+    quantity = models.PositiveIntegerField(
         _("Quantity"),
         default=1,
         validators=[MinValueValidator(1)],
