@@ -4,7 +4,8 @@ from django.forms import ModelChoiceField
 from django.utils.translation import gettext_lazy as _
 
 # George Forge
-from georgeforge.models import DeliverySystem
+from georgeforge.models import DeliverySystem, Order
+from georgeforge.utils.permissioned_forms import PermissionedModelForm
 
 
 class SystemChoiceField(ModelChoiceField):
@@ -12,23 +13,13 @@ class SystemChoiceField(ModelChoiceField):
         return obj.friendly
 
 
-class StoreOrderForm(forms.Form):
+class StoreOrderForm(PermissionedModelForm):
     """ """
 
-    notes = forms.CharField(
-        label=_("Notes"),
-        required=False,
-        empty_value="",
-        max_length=4096,
-        widget=forms.Textarea(attrs={"rows": "5"}),
-    )
-
-    quantity = forms.IntegerField(
-        label=_("Quantity"),
-        required=True,
-        min_value=1,
-        widget=forms.NumberInput(attrs={"value": 1}),
-    )
+    class Meta:
+        model = Order
+        fields = ["notes", "quantity", "on_behalf_of"]
+        field_permissions = {"on_behalf_of": "georgeforge.manage_store"}
 
     delivery = SystemChoiceField(
         label=_("Delivery System"),

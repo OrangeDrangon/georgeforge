@@ -11,8 +11,6 @@ from django.utils.translation import gettext_lazy as _
 # Alliance Auth (External Libs)
 from eveuniverse.models import EveSolarSystem, EveType
 
-# Eve Universe
-
 
 class General(models.Model):
     """Meta model for app permissions"""
@@ -179,3 +177,11 @@ class Order(models.Model):
     )
 
     status = models.IntegerField(_("Status"), choices=OrderStatus.choices)
+
+    on_behalf_of = models.CharField(
+        _("On behalf of"),
+        help_text=_("EVE name of person you are ordering on behalf of"),
+        blank=True,
+        null=True,
+        max_length=37,
+    )

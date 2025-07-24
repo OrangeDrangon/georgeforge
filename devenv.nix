@@ -23,9 +23,6 @@
   languages.python.uv.sync.allGroups = true;
   languages.python.venv.enable = true;
 
-  git-hooks.excludes = [
-    "\\.devcontainer\\.json"
-  ];
   git-hooks.hooks = {
     black.enable = true;
     flake8.enable = true;

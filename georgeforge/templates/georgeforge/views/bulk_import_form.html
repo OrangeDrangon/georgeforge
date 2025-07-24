@@ -1,5 +1,10 @@
-{% extends "georgeforge/base.html" %} {% load i18n %} {% load humanize %} {%
-load static %} {% load django_bootstrap5 %} {% block details %}
+{% extends "georgeforge/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load static %}
+{% load django_bootstrap5 %} 
+{% block details %}
+
 <form method="get" action="{% url 'georgeforge:export_offers' %}">
     <input class="btn btn-primary" type="submit" value="Download CSV" />
 </form>
@@ -12,6 +17,10 @@ load static %} {% load django_bootstrap5 %} {% block details %}
     {% csrf_token %} {% bootstrap_form form %}
     <input class="btn btn-primary" type="submit" />
 </form>
-{% endblock details %} {% block extra_javascript %} {% endblock extra_javascript
-%} {% block extra_css %} {% endblock extra_css %} {% block extra_script %} {%
-endblock extra_script %}
+{% endblock details %}
+{% block extra_javascript %} 
+{% endblock extra_javascript %}
+{% block extra_css %}
+{% endblock extra_css %}
+{% block extra_script %}
+{%endblock extra_script %}

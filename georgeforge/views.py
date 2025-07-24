@@ -59,12 +59,12 @@ def my_orders(request: WSGIRequest) -> HttpResponse:
     my_orders = (
         Order.objects.select_related()
         .filter(user=request.user, status__lt=Order.OrderStatus.DELIVERED)
-        .order_by("id")
+        .order_by("-id")
     )
     done_orders = (
         Order.objects.select_related()
         .filter(user=request.user, status__gte=Order.OrderStatus.DELIVERED)
-        .order_by("id")
+        .order_by("-id")
     )
 
     context = {"my_orders": my_orders, "done_orders": done_orders}
@@ -91,42 +91,48 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
             system = form.cleaned_data["delivery"].system
             quantity = form.cleaned_data["quantity"]
 
-            if quantity >= 1:
-                order = Order.objects.create(
-                    user=request.user,
-                    price=for_sale.price,
-                    totalcost=(for_sale.price * quantity),
-                    deposit=(for_sale.deposit * quantity),
-                    eve_type=for_sale.eve_type,
-                    notes=notes,
-                    description=for_sale.description,
-                    status=Order.OrderStatus.PENDING,
-                    deliverysystem=system,
-                    quantity=quantity,
-                )
+            # IDK if we need to do this but it feels better
+            on_behalf_of = None
+            if request.user.has_perm("georgeforge.manage_store"):
+                on_behalf_of = form.cleaned_data["on_behalf_of"]
 
-                send_update_to_webhook(
-                    f"<@&610206372079861780> New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}, Submitted By: {request.user.profile.main_character.character_name}"
-                )
-
-                send_statusupdate_dm(order)
-
-                messages.success(
-                    request,
-                    _("Successfully ordered %(qty)d x %(name)s for %(price)s ISK")
-                    % {
-                        "qty": quantity,
-                        "name": for_sale.eve_type.name,
-                        "price": intcomma(for_sale.price * quantity),
-                    },
-                )
-
-                return redirect("georgeforge:store")
-            else:
+            if quantity < 1:
                 messages.error(request, _("Minimum quantity 1"))
                 return redirect("georgeforge:store")
 
-    context = {"for_sale": for_sale, "form": StoreOrderForm()}
+            order = Order.objects.create(
+                user=request.user,
+                price=for_sale.price,
+                totalcost=(for_sale.price * quantity),
+                deposit=(for_sale.deposit * quantity),
+                eve_type=for_sale.eve_type,
+                notes=notes,
+                description=for_sale.description,
+                status=Order.OrderStatus.PENDING,
+                deliverysystem=system,
+                quantity=quantity,
+                on_behalf_of=on_behalf_of,
+            )
+
+            send_update_to_webhook(
+                f"<@&610206372079861780> New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}, Submitted By: {request.user.profile.main_character.character_name}"
+            )
+
+            send_statusupdate_dm(order)
+
+            messages.success(
+                request,
+                _("Successfully ordered %(qty)d x %(name)s for %(price)s ISK")
+                % {
+                    "qty": quantity,
+                    "name": for_sale.eve_type.name,
+                    "price": intcomma(for_sale.price * quantity),
+                },
+            )
+
+            return redirect("georgeforge:store")
+
+    context = {"for_sale": for_sale, "form": StoreOrderForm(for_user=request.user)}
 
     return render(request, "georgeforge/views/store_order_form.html", context)
 
@@ -183,12 +189,12 @@ def all_orders(request: WSGIRequest) -> HttpResponse:
     orders = (
         Order.objects.select_related()
         .filter(status__lt=Order.OrderStatus.DELIVERED)
-        .order_by("id")
+        .order_by("-id")
     )
     done_orders = (
         Order.objects.select_related()
         .filter(status__gte=Order.OrderStatus.DELIVERED)
-        .order_by("id")
+        .order_by("-id")
     )
     dsystems = []
     for x in DeliverySystem.objects.select_related().all():

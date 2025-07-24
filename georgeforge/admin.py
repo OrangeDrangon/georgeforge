@@ -44,5 +44,13 @@ class DeliverySystemAdmin(ManageStoreAdmin):
 class OrderAdmin(ManageStoreAdmin):
     """ """
 
-    list_display = ["user", "status", "eve_type", "price", "description", "notes"]
+    list_display = [
+        "user",
+        "status",
+        "eve_type",
+        "price",
+        "description",
+        "notes",
+        "on_behalf_of",
+    ]
     autocomplete_fields = ["eve_type"]
