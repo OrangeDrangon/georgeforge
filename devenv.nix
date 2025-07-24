@@ -1,4 +1,10 @@
-{ pkgs, lib, config, inputs, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}:
 
 {
   packages = [
@@ -17,9 +23,15 @@
   languages.python.uv.sync.allGroups = true;
   languages.python.venv.enable = true;
 
+  git-hooks.excludes = [
+    "\\.devcontainer\\.json"
+  ];
   git-hooks.hooks = {
     black.enable = true;
     flake8.enable = true;
+    isort.enable = true;
+    pyright.enable = false;
+    python-debug-statements.enable = true;
     check-shebang-scripts-are-executable.enable = true;
     check-symlinks.enable = true;
     check-yaml.enable = true;
@@ -29,7 +41,7 @@
     check-added-large-files.enable = true;
     check-case-conflicts.enable = true;
     markdownlint.enable = true;
-    nixpkgs-fmt.enable = true;
+    nixfmt-rfc-style.enable = true;
     prettier.enable = true;
     trufflehog.enable = true;
   };

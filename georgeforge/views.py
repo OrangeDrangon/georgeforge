@@ -19,13 +19,14 @@ from django.utils.translation import gettext_lazy as _
 from eveuniverse.models import EveSolarSystem, EveType
 
 # George Forge
-from . import app_settings
 from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
 from georgeforge.models import DeliverySystem, ForSale, Order
 from georgeforge.tasks import (
     send_statusupdate_dm,
     send_update_to_webhook,
 )
+
+from . import app_settings
 
 logger = logging.getLogger(__name__)
 
