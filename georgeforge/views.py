@@ -108,7 +108,7 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
                 send_update_to_webhook(
                     f"<@&610206372079861780> New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}, Submitted By: {request.user.profile.main_character.character_name}"
                 )
-                
+
                 send_statusupdate_dm(order)
 
                 messages.success(
@@ -216,7 +216,13 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
 
         if form.is_valid():
             data = form.cleaned_data["data"]
-            parsed = [row for row in csv.DictReader(data.splitlines(), fieldnames=["Item Name", "Description", "Price", "Deposit"])]
+            parsed = [
+                row
+                for row in csv.DictReader(
+                    data.splitlines(),
+                    fieldnames=["Item Name", "Description", "Price", "Deposit"],
+                )
+            ]
             ForSale.objects.all().delete()
 
             had_error = 0

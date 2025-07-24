@@ -43,6 +43,9 @@ class BulkImportStoreItemsForm(forms.Form):
         label=_("CSV Paste"),
         empty_value=_("Item Name,Description,Price,Deposit"),
         widget=forms.Textarea(
-            attrs={"rows": "15", "placeholder": _("Item Name,Description,Price,Deposit")}
+            attrs={
+                "rows": "15",
+                "placeholder": _("Item Name,Description,Price,Deposit"),
+            }
         ),
     )
