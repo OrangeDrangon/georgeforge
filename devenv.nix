@@ -33,4 +33,6 @@
     prettier.enable = true;
     trufflehog.enable = true;
   };
+
+  devcontainer.enable = true;
 }
