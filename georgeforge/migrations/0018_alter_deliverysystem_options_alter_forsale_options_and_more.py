@@ -6,20 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('georgeforge', '0017_alter_order_status'),
+        ("georgeforge", "0017_alter_order_status"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='deliverysystem',
-            options={'default_permissions': ()},
+            name="deliverysystem",
+            options={"default_permissions": ()},
         ),
         migrations.AlterModelOptions(
-            name='forsale',
-            options={'default_permissions': ()},
+            name="forsale",
+            options={"default_permissions": ()},
         ),
         migrations.AlterModelOptions(
-            name='order',
-            options={'default_permissions': ()},
+            name="order",
+            options={"default_permissions": ()},
         ),
     ]

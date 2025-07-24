@@ -1,21 +1,10 @@
-{% extends "allianceauth/base-bs5.html" %}
-
-{% load i18n %}
-
-{% block page_title %}
-    {% translate "George Forge" %}
-{% endblock page_title %}
-
-{% block header_nav_brand %}
-    {% translate "George Forge" %}
-{% endblock header_nav_brand %}
-
-{% block header_nav_collapse_left %}
-    {% include "georgeforge/partials/top-menu.html" %}
-{% endblock header_nav_collapse_left %}
-
+{% extends "allianceauth/base-bs5.html" %} {% load i18n %} {% block page_title
+%} {% translate "George Forge" %} {% endblock page_title %} {% block
+header_nav_brand %} {% translate "George Forge" %} {% endblock header_nav_brand
+%} {% block header_nav_collapse_left %} {% include
+"georgeforge/partials/top-menu.html" %} {% endblock header_nav_collapse_left %}
 {% block content %}
-    <div class="allianceauth-georgeforge">
-        {% block details %}{% endblock details %}
-    </div>
+<div class="allianceauth-georgeforge">
+    {% block details %}{% endblock details %}
+</div>
 {% endblock content %}

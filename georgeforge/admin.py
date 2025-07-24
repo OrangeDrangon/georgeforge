@@ -6,22 +6,23 @@ from django.contrib import admin
 # George Forge
 from georgeforge.models import DeliverySystem, ForSale, Order
 
+
 class ManageStoreAdmin(admin.ModelAdmin):
     def _has_perm(self, request) -> bool:
         return request.user.has_perm("georgeforge.manage_store")
- 
+
     def has_view_permission(self, request, obj=None):
         return self._has_perm(request)
-        
+
     def has_add_permission(self, request):
         return self._has_perm(request)
-        
+
     def has_change_permission(self, request, obj=None):
         return self._has_perm(request)
-        
+
     def has_delete_permission(self, request, obj=None):
         return self._has_perm(request)
-        
+
 
 @admin.register(ForSale)
 class ForSaleAdmin(ManageStoreAdmin):

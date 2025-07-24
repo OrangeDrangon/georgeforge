@@ -23,7 +23,6 @@ from . import app_settings
 from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
 from georgeforge.models import DeliverySystem, ForSale, Order
 from georgeforge.tasks import (
-    send_discord_dm,
     send_statusupdate_dm,
     send_update_to_webhook,
 )

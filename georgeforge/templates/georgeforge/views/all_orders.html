@@ -1,8 +1,5 @@
-{% extends "georgeforge/base.html" %}
-{% load i18n %}
-{% load humanize %}
-{% load static %}
-{% block details %}
+{% extends "georgeforge/base.html" %} {% load i18n %} {% load humanize %} {%
+load static %} {% block details %}
 <h4>In Progress Orders</h4>
 <table class="table">
     <thead>
@@ -18,33 +15,94 @@
     </thead>
     <tbody>
         {% for entry in all_orders %}
-        <form method="post" id="{{ entry.id }}" action="{% url 'georgeforge:all_orders' %}">
-            <input type="hidden" name="id" value="{{ entry.id }}">{% csrf_token %}
+        <form
+            method="post"
+            id="{{ entry.id }}"
+            action="{% url 'georgeforge:all_orders' %}"
+        >
+            <input type="hidden" name="id" value="{{ entry.id }}" />{%
+            csrf_token %}
             <tr>
                 <th scope="row">{{ entry.id }}</th>
                 <td>{{ entry.user.profile.main_character.character_name }}</td>
-                <td><input type="number" style="width: 50px" name="quantity" min="1" value="{{ entry.quantity }}" required> x
-                    <img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate 'Item Icon' %}" />
-                    {{ entry.eve_type.name }}</td>
-                <td><input type="number" min="0.0" step="0.01" id="paid" name="paid" value="{{ entry.paid }}" required>/
-                    {{ entry.totalcost|intcomma }} ISK{% if entry.deposit > entry.paid %}<br />(Deposit: {{ entry.deposit|intcomma }} ISK){% endif %}</td>
+                <td>
+                    <input
+                        type="number"
+                        style="width: 50px"
+                        name="quantity"
+                        min="1"
+                        value="{{ entry.quantity }}"
+                        required
+                    />
+                    x
+                    <img
+                        height="24"
+                        width="24"
+                        src="{{ entry.eve_type.icon_url }}"
+                        alt="{% translate 'Item Icon' %}"
+                    />
+                    {{ entry.eve_type.name }}
+                </td>
+                <td>
+                    <input
+                        type="number"
+                        min="0.0"
+                        step="0.01"
+                        id="paid"
+                        name="paid"
+                        value="{{ entry.paid }}"
+                        required
+                    />/ {{ entry.totalcost|intcomma }} ISK{% if entry.deposit >
+                    entry.paid %}<br />(Deposit: {{ entry.deposit|intcomma }}
+                    ISK){% endif %}
+                </td>
                 <td>
                     <select id="system" name="system">
                         {% for id,name in dsystems %}
-                        <option value="{{ id }}" {% if entry.deliverysystem_id == id %} selected="true" {% endif %}>
-                            {{ name }}</option>
+                        <option
+                            value="{{ id }}"
+                            {%
+                            if
+                            entry.deliverysystem_id=""
+                            ="id"
+                            %}
+                            selected="true"
+                            {%
+                            endif
+                            %}
+                        >
+                            {{ name }}
+                        </option>
                         {% endfor %}
                     </select>
                 </td>
                 <td>
                     <select id="status" name="status">
                         {% for code,name in status %}
-                        <option value="{{ code }}" {% if entry.status == code %} selected="true" {% endif %}>{{ name }}
+                        <option
+                            value="{{ code }}"
+                            {%
+                            if
+                            entry.status=""
+                            ="code"
+                            %}
+                            selected="true"
+                            {%
+                            endif
+                            %}
+                        >
+                            {{ name }}
                         </option>
                         {% endfor %}
                     </select>
                 </td>
-                <td><input class="btn btn-primary" type="submit" value="Update"></td>
+                <td>
+                    <input
+                        class="btn btn-primary"
+                        type="submit"
+                        value="Update"
+                    />
+                </td>
             </tr>
         </form>
         {% endfor %}
@@ -67,20 +125,25 @@
         <tr>
             <th scope="row">{{ entry.id }}</th>
             <td>{{ entry.user.profile.main_character.character_name }}</td>
-            <td>{{ entry.quantity }} x
-                <img height="24" width="24" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
-                {{ entry.eve_type.name }}</td>
+            <td>
+                {{ entry.quantity }} x
+                <img
+                    height="24"
+                    width="24"
+                    src="{{ entry.eve_type.icon_url }}"
+                    alt="{% translate 'Item Icon' %}"
+                />
+                {{ entry.eve_type.name }}
+            </td>
             <td>{{ entry.deliverysystem.name }}</td>
-            <td>{{ entry.paid|intcomma }}/{{ entry.totalcost|intcomma }} ISK</td>
+            <td>
+                {{ entry.paid|intcomma }}/{{ entry.totalcost|intcomma }} ISK
+            </td>
             <td>{{ entry.get_status_display }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-{% endblock details %}
-{% block extra_javascript %}
-{% endblock extra_javascript %}
-{% block extra_css %}
-{% endblock extra_css %}
-{% block extra_script %}
-{% endblock extra_script %}
+{% endblock details %} {% block extra_javascript %} {% endblock extra_javascript
+%} {% block extra_css %} {% endblock extra_css %} {% block extra_script %} {%
+endblock extra_script %}

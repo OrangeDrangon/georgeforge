@@ -30,7 +30,7 @@ class General(models.Model):
 
 class ForSale(models.Model):
     """An item for sale"""
-    
+
     class Meta:
         default_permissions = ()
 
@@ -97,7 +97,7 @@ class DeliverySystem(models.Model):
 
 class Order(models.Model):
     """An order from a user"""
-    
+
     class Meta:
         default_permissions = ()
 
