@@ -18,32 +18,3 @@
         href="{% url 'georgeforge:bulk_import_form' %}">{% translate "Bulk Item Import" %}</a>
 </li>
 {% endif %}
-{% comment %}
-<li class="nav-item">
-    <a class="nav-link {% navactive request 'afat:statistics_overview afat:statistics_corporation afat:statistics_character afat:stats_ally' %}"
-        href="{% url 'afat:statistics_overview' %}">
-        {% translate "Statistics" %}
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link {% navactive request 'afat:fatlinks_overview afat:fatlinks_details_fatlink' %}"
-        href="{% url 'afat:fatlinks_overview' %}">
-        {% translate "FAT links" %}
-    </a>
-</li>
-
-{% if perms.afat.add_fatlink or perms.afat.manage_afat %}
-<li class="nav-item">
-    <a class="nav-link {% navactive request 'afat:fatlinks_add_fatlink' %}"
-        href="{% url 'afat:fatlinks_add_fatlink' %}">
-        {% translate "Add FAT link" %}
-    </a>
-</li>
-{% endif %} {% if perms.afat.log_view %}
-<li class="nav-item">
-    <a class="nav-link {% navactive request 'afat:logs_overview' %}" href="{% url 'afat:logs_overview' %}">
-        {% translate "View log" %}
-    </a>
-</li>
-{% endif %} {% endcomment %}

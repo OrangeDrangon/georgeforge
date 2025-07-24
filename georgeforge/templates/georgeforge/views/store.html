@@ -8,27 +8,27 @@
     <li class="list-group-item d-flex flex-row align-items-center justify-content-start">
         <div class="p-2">
             <span>
-                <img height="64" width="64" src="{{ entry.eve_type.icon_url }}" alt="{% translate " Item Icon" %}" />
+                <img height="64" width="64" src="{{ entry.eve_type.icon_url }}" alt="{% translate "Item Icon" %}" />
             </span>
-            <span>{{ entry.eve_type.name }}</span>
+            <span>{% translate entry.eve_type.name %}</span>
         </div>
         <div class="p-2 flex-grow-1">
             <span>{{ entry.description|safe }}</span>
         </div>
         <div class="p-2 text-start">
-            <span>Cost:</span><br />
+            <span>{% translate "Price" %}:</span><br />
             {% if entry.deposit %}
-            <span>Deposit:</span>
+            <span>{% translate "Deposit" %}:</span>
             {% endif %}
         </div>
         <div class="p-2 text-end">
-            <span>{{ entry.price|intcomma }} ISK</span><br />
+            <span>{{ entry.price|intcomma }} {% translate "ISK" %}</span><br />
             {% if entry.deposit %}
-            <span>{{ entry.deposit|intcomma }} ISK</span>
+            <span>{{ entry.deposit|intcomma }} {% translate "ISK" %}</span>
             {% endif %}
         </div>
         <div class="p-2">
-            <a class="btn btn-primary" href="{% url 'georgeforge:store_order_form' entry.id %}">Order</a>
+            <a class="btn btn-primary" href="{% url 'georgeforge:store_order_form' entry.id %}">{% translate "Order" %}</a>
         </div>
     </li>
     {% endfor %}
