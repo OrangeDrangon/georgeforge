@@ -43,6 +43,10 @@ discord = [
     "allianceauth-discordbot<5,>=4",
 ]
 
+dev = [
+    "django-stubs"
+]
+
 [tool.hatch.version]
 path = "georgeforge/__init__.py"
 
