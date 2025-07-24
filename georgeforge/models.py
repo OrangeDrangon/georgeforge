@@ -30,6 +30,9 @@ class General(models.Model):
 
 class ForSale(models.Model):
     """An item for sale"""
+    
+    class Meta:
+        default_permissions = ()
 
     eve_type = models.ForeignKey(
         EveType,
@@ -64,6 +67,9 @@ class ForSale(models.Model):
 class DeliverySystem(models.Model):
     """A SolarSystem Available for orders to be delivered to"""
 
+    class Meta:
+        default_permissions = ()
+
     system = models.ForeignKey(
         EveSolarSystem,
         verbose_name=_("Solar System"),
@@ -91,6 +97,9 @@ class DeliverySystem(models.Model):
 
 class Order(models.Model):
     """An order from a user"""
+    
+    class Meta:
+        default_permissions = ()
 
     class OrderStatus(models.IntegerChoices):
         """ """
