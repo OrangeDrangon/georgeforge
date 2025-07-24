@@ -40,7 +40,7 @@ def store(request: WSGIRequest) -> HttpResponse:
 
     """
 
-    for_sale = ForSale.objects.select_related().all().order_by('eve_type__eve_group_id')
+    for_sale = ForSale.objects.select_related().all().order_by("eve_type__eve_group_id")
 
     context = {"for_sale": for_sale}
 
@@ -229,7 +229,9 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
 
             for item in parsed:
                 try:
-                    eve_type = EveType.objects.filter(eve_group__eve_category_id__in=app_settings.FORGE_CATEGORIES).get(name=item["Item Name"])
+                    eve_type = EveType.objects.filter(
+                        eve_group__eve_category_id__in=app_settings.FORGE_CATEGORIES
+                    ).get(name=item["Item Name"])
 
                     ForSale.objects.create(
                         eve_type=eve_type,
