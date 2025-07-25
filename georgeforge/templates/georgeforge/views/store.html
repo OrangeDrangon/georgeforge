@@ -9,13 +9,15 @@
         <ul class="list-group pb-2">
             {% for entry in entries %}
                 <li class="list-group-item d-flex flex-row align-items-center justify-content-start">
-                    <div class="p-2">
+                    <div class="p-2 flex-shrink-0">
                         <span>
                             <img height="64"
                                  width="64"
                                  src="{{ entry.eve_type.icon_url }}"
                                  alt="{% translate 'Item Icon' %}" />
                         </span>
+                    </div>
+                    <div class="p-2 w-25">
                         <span>{% translate entry.eve_type.name %}</span>
                     </div>
                     <div class="p-2 flex-grow-1">
