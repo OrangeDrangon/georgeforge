@@ -1,14 +1,15 @@
 """
 App Models
 """
+
 # Django
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from eveuniverse.models import EveMarketGroup
-from eveuniverse.models import EveType
+
 # Alliance Auth (External Libs)
-# Eve Universe
+from eveuniverse.models import EveSolarSystem, EveType
 
 
 class General(models.Model):
@@ -28,6 +29,9 @@ class General(models.Model):
 class ForSale(models.Model):
     """An item for sale"""
 
+    class Meta:
+        default_permissions = ()
+
     eve_type = models.ForeignKey(
         EveType,
         verbose_name=_("EVE Type"),
@@ -46,18 +50,63 @@ class ForSale(models.Model):
         max_digits=15,
         decimal_places=2,
         help_text=_("Cost per unit"),
+        validators=[MinValueValidator(1)],
     )
+
+    deposit = models.DecimalField(
+        _("Deposit"),
+        default=0,
+        max_digits=15,
+        decimal_places=2,
+        help_text=_("Deposit per unit"),
+    )
+
+
+class DeliverySystem(models.Model):
+    """A SolarSystem Available for orders to be delivered to"""
+
+    class Meta:
+        default_permissions = ()
+
+    system = models.ForeignKey(
+        EveSolarSystem,
+        verbose_name=_("Solar System"),
+        on_delete=models.CASCADE,
+    )
+
+    friendly_name = models.TextField(
+        _("Friendly Name"),
+        max_length=32,
+        default=None,
+        null=True,
+        blank=True,
+    )
+
+    enabled = models.BooleanField(
+        default=True,
+    )
+
+    @property
+    def friendly(self):
+        if self.friendly_name:
+            return f"{self.system.name} - {self.friendly_name}"
+        return self.system.name
 
 
 class Order(models.Model):
     """An order from a user"""
 
+    class Meta:
+        default_permissions = ()
+
     class OrderStatus(models.IntegerChoices):
         """ """
+
         PENDING = 10, _("Pending")
         AWAITING_DEPOSIT = 20, _("Awaiting Deposit")
-        BUILDING = 30, _("Building")
-        AWAITING_FINAL_PAYMENT = 40, _("Awaiting Final Payment")
+        BUILDING_PARTS = 30, _("Building Parts")
+        BUILDING_HULL = 35, _("Building Hull")
+        AWAITING_FINAL_PAYMENT = 40, _("Contract Up")
         DELIVERED = 50, _("Delivered")
         REJECTED = 60, _("Rejected")
 
@@ -68,10 +117,32 @@ class Order(models.Model):
     )
 
     price = models.DecimalField(
-        _("Price"),
+        _("Price per unit"),
         max_digits=15,
         decimal_places=2,
         help_text=_("Cost per unit"),
+    )
+
+    totalcost = models.DecimalField(
+        _("Total Order cost"),
+        max_digits=25,
+        decimal_places=2,
+        help_text=_("Total Order cost"),
+    )
+
+    deposit = models.DecimalField(
+        _("Deposit required per unit"),
+        max_digits=25,
+        decimal_places=2,
+        help_text=_("Deposit required per unit"),
+    )
+
+    paid = models.DecimalField(
+        _("Amount Paid"),
+        default=0,
+        max_digits=25,
+        decimal_places=2,
+        help_text=_("Amount paid"),
     )
 
     eve_type = models.ForeignKey(
@@ -81,8 +152,15 @@ class Order(models.Model):
         limit_choices_to={"published": 1},
     )
 
+    quantity = models.PositiveIntegerField(
+        _("Quantity"),
+        default=1,
+        validators=[MinValueValidator(1)],
+    )
+
     notes = models.TextField(
         _("Notes"),
+        blank=True,
         max_length=4096,
     )
 
@@ -92,4 +170,18 @@ class Order(models.Model):
         max_length=4096,
     )
 
+    deliverysystem = models.ForeignKey(
+        EveSolarSystem,
+        verbose_name=_("Delivery System"),
+        on_delete=models.CASCADE,
+    )
+
     status = models.IntegerField(_("Status"), choices=OrderStatus.choices)
+
+    on_behalf_of = models.CharField(
+        _("On behalf of"),
+        help_text=_("EVE name of person you are ordering on behalf of"),
+        blank=True,
+        null=True,
+        max_length=37,
+    )

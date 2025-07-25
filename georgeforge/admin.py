@@ -1,38 +1,56 @@
 """Admin models"""
-# Standard Library
-from typing import Any
 
-from django.contrib import admin  # noqa: F401
-from django.db.models.fields.related import ForeignKey
-from django.db.models.fields.related import ManyToManyField
-from django.forms.models import ModelChoiceField
-from django.forms.models import ModelMultipleChoiceField
-from django.http import HttpRequest
-from eveuniverse.models import EveCategory
-from eveuniverse.models import EveMarketGroup
-from eveuniverse.models import EveType
-
-from georgeforge.models import ForSale
-from georgeforge.models import Order
 # Django
-# Alliance Auth (External Libs)
-# Eve Universe
-# George Forge
+from django.contrib import admin
 
-# Register your models here.
+# George Forge
+from georgeforge.models import DeliverySystem, ForSale, Order
+
+
+class ManageStoreAdmin(admin.ModelAdmin):
+    def _has_perm(self, request) -> bool:
+        return request.user.has_perm("georgeforge.manage_store")
+
+    def has_view_permission(self, request, obj=None):
+        return self._has_perm(request)
+
+    def has_add_permission(self, request):
+        return self._has_perm(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self._has_perm(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return self._has_perm(request)
 
 
 @admin.register(ForSale)
-class ForSaleAdmin(admin.ModelAdmin):
+class ForSaleAdmin(ManageStoreAdmin):
     """ """
-    list_display = ["eve_type", "price", "description"]
+
+    list_display = ["eve_type", "description", "deposit", "price"]
     autocomplete_fields = ["eve_type"]
 
 
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
+@admin.register(DeliverySystem)
+class DeliverySystemAdmin(ManageStoreAdmin):
     """ """
+
+    list_display = ["system", "enabled", "friendly_name"]
+    autocomplete_fields = ["system"]
+
+
+@admin.register(Order)
+class OrderAdmin(ManageStoreAdmin):
+    """ """
+
     list_display = [
-        "user", "status", "eve_type", "price", "description", "notes"
+        "user",
+        "status",
+        "eve_type",
+        "price",
+        "description",
+        "notes",
+        "on_behalf_of",
     ]
     autocomplete_fields = ["eve_type"]

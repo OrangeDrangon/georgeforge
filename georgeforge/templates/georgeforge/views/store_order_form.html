@@ -2,31 +2,40 @@
 {% load i18n %}
 {% load humanize %}
 {% load static %}
+{% load django_bootstrap5 %} 
 {% block details %}
-    <h1 class="fs-2">
-        <img height="64"
-             width="64"
-             src="{{ for_sale.eve_type.render_url }}"
-             alt="{% translate "Ship Image" %}" />
-        {{ for_sale.eve_type.name }} - {{ for_sale.price|intcomma }} ISK
-    </h1>
-    <div>{{ for_sale.description|safe }}</div>
-    <form class="m-3"
-          method="post"
-          id="order-form"
-          action="{% url 'georgeforge:store_order_form' for_sale.id %}">
-        {% csrf_token %}
-        {{ form }}
-        <input class="btn btn-primary" type="submit">
-    </form>
+
+<h1 class="fs-2">
+    <img
+        height="64"
+        width="64"
+        src="{{ for_sale.eve_type.icon_url }}"
+        alt="{% translate 'Ship Image' %}"
+    />
+    {% translate for_sale.eve_type.name %}
+</h1>
+<span>
+    {% if for_sale.deposit >= 0 %} 
+    {% blocktranslate with price=for_sale.price|intcomma %}Price per unit: {{ price }} ISK {% endblocktranslate %} 
+    {% else %} 
+    {% blocktranslate with price=for_sale.price|intcomma deposit=for_sale.deposit|intcomma %}Price per unit: {{ price }} ISK with {{ deposit }} ISK Deposit{{% endblocktranslate %}
+    {% endif %}
+</span>
+<div>{{ for_sale.description }}</div>
+<form
+    class="m-3"
+    method="post"
+    id="order-form"
+    action="{% url 'georgeforge:store_order_form' for_sale.id %}"
+>
+    {% csrf_token %} {% bootstrap_form form %}
+    <input class="btn btn-primary" type="submit" value="Submit Order" />
+</form>
+
 {% endblock details %}
 {% block extra_javascript %}
 {% endblock extra_javascript %}
 {% block extra_css %}
-    <link rel="stylesheet"
-          href="{% static 'georgeforge/css/store_order_form.css' %}"
-          type="text/css"
-          media="screen" />
 {% endblock extra_css %}
 {% block extra_script %}
 {% endblock extra_script %}

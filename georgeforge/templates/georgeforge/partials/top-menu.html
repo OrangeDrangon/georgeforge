@@ -1,38 +1,35 @@
 {% load i18n %}
 {% load navactive %}
 <li class="nav-item">
-    <a class="nav-link {% navactive request 'georgeforge:store' %}"
-       href="{% url 'georgeforge:store' %}">{% translate "Store" %}</a>
+    <a
+        class="nav-link {% navactive request 'georgeforge:store' %}"
+        href="{% url 'georgeforge:store' %}"
+    >
+        {% translate "Store" %}</a
+    >
+</li>
+<li class="nav-item">
+    <a
+        class="nav-link {% navactive request 'georgeforge:my_orders' %}"
+        href="{% url 'georgeforge:my_orders' %}"
+    >
+        {% translate "My Orders" %}</a
+    >
 </li>
 {% if perms.georgeforge.manage_store %}
-    <li class="nav-item">
-        <a class="nav-link {% navactive request 'georgeforge:bulk_import_form' %}"
-           href="{% url 'georgeforge:bulk_import_form' %}">{% translate "Bulk Item Import" %}</a>
-    </li>
+<li class="nav-item">
+    <a
+        class="nav-link {% navactive request 'georgeforge:all_orders' %}"
+        href="{% url 'georgeforge:all_orders' %}"
+    >
+        {% translate "Manage Orders" %}</a
+    >
+</li>
+<li class="nav-item">
+    <a
+        class="nav-link {% navactive request 'georgeforge:bulk_import_form' %}"
+        href="{% url 'georgeforge:bulk_import_form' %}"
+        >{% translate "Bulk Item Import" %}</a
+    >
+</li>
 {% endif %}
-{% comment %}
-<li class="nav-item">
-    <a class="nav-link {% navactive request 'afat:statistics_overview afat:statistics_corporation afat:statistics_character afat:stats_ally' %}" href="{% url 'afat:statistics_overview' %}">
-        {% translate "Statistics" %}
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link {% navactive request 'afat:fatlinks_overview afat:fatlinks_details_fatlink' %}" href="{% url 'afat:fatlinks_overview' %}">
-        {% translate "FAT links" %}
-    </a>
-</li>
-
-{% if perms.afat.add_fatlink or perms.afat.manage_afat %}
-<li class="nav-item">
-    <a class="nav-link {% navactive request 'afat:fatlinks_add_fatlink' %}" href="{% url 'afat:fatlinks_add_fatlink' %}">
-        {% translate "Add FAT link" %}
-    </a>
-</li>
-{% endif %} {% if perms.afat.log_view %}
-<li class="nav-item">
-    <a class="nav-link {% navactive request 'afat:logs_overview' %}" href="{% url 'afat:logs_overview' %}">
-        {% translate "View log" %}
-    </a>
-</li>
-{% endif %} {% endcomment %}
