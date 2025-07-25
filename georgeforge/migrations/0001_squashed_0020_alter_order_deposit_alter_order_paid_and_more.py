@@ -9,35 +9,6 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    replaces = [
-        ("georgeforge", "0001_initial"),
-        ("georgeforge", "0002_alter_general_options_forsale"),
-        ("georgeforge", "0003_alter_forsale_description"),
-        ("georgeforge", "0004_alter_forsale_eve_type"),
-        ("georgeforge", "0005_alter_forsale_eve_type_order"),
-        ("georgeforge", "0006_alter_order_eve_type"),
-        ("georgeforge", "0007_order_description_alter_forsale_description_and_more"),
-        ("georgeforge", "0008_order_status"),
-        ("georgeforge", "0009_alter_order_status"),
-        ("georgeforge", "0010_alter_order_notes"),
-        ("georgeforge", "0011_forsale_deposit_order_paid"),
-        ("georgeforge", "0012_deliverysystem"),
-        ("georgeforge", "0013_order_deliverysystem_and_more"),
-        (
-            "georgeforge",
-            "0014_order_deposit_order_quantity_alter_forsale_price_and_more",
-        ),
-        ("georgeforge", "0015_order_totalcost"),
-        ("georgeforge", "0016_alter_order_status"),
-        ("georgeforge", "0017_alter_order_status"),
-        (
-            "georgeforge",
-            "0018_alter_deliverysystem_options_alter_forsale_options_and_more",
-        ),
-        ("georgeforge", "0019_order_on_behalf_of"),
-        ("georgeforge", "0020_alter_order_deposit_alter_order_paid_and_more"),
-    ]
-
     initial = True
 
     dependencies = [
