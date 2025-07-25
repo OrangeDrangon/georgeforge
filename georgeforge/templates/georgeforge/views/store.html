@@ -4,42 +4,45 @@
 {% load static %}
 {% load django_bootstrap5 %}
 {% block details %}
-    <ul class="list-group">
-        {% for entry in for_sale %}
-            <li class="list-group-item d-flex flex-row align-items-center justify-content-start">
-                <div class="p-2">
-                    <span>
-                        <img height="64"
-                             width="64"
-                             src="{{ entry.eve_type.icon_url }}"
-                             alt="{% translate 'Item Icon' %}" />
-                    </span>
-                    <span>{% translate entry.eve_type.name %}</span>
-                </div>
-                <div class="p-2 flex-grow-1">
-                    <span>{{ entry.description|safe }}</span>
-                </div>
-                <div class="p-2 text-start">
-                    <span>{% translate "Price" %}:</span>
-                    <br />
-                    {% if entry.deposit %}
-                        <span>{% translate "Deposit" %}:</span>
-                    {% endif %}
-                </div>
-                <div class="p-2 text-end">
-                    <span>{{ entry.price|intcomma }} {% translate "ISK" %}</span>
-                    <br />
-                    {% if entry.deposit %}
-                        <span>{{ entry.deposit|intcomma }} {% translate "ISK" %}</span>
-                    {% endif %}
-                </div>
-                <div class="p-2">
-                    <a class="btn btn-primary"
-                       href="{% url 'georgeforge:store_order_form' entry.id %}">{% translate "Order" %}</a>
-                </div>
-            </li>
-        {% endfor %}
-    </ul>
+    {% for group_name, entries in for_sale %}
+        <h4>{{ group_name }}</h4>
+        <ul class="list-group pb-2">
+            {% for entry in entries %}
+                <li class="list-group-item d-flex flex-row align-items-center justify-content-start">
+                    <div class="p-2">
+                        <span>
+                            <img height="64"
+                                 width="64"
+                                 src="{{ entry.eve_type.icon_url }}"
+                                 alt="{% translate 'Item Icon' %}" />
+                        </span>
+                        <span>{% translate entry.eve_type.name %}</span>
+                    </div>
+                    <div class="p-2 flex-grow-1">
+                        <span>{{ entry.description|safe }}</span>
+                    </div>
+                    <div class="p-2 text-start">
+                        <span>{% translate "Price" %}:</span>
+                        <br />
+                        {% if entry.deposit %}
+                            <span>{% translate "Deposit" %}:</span>
+                        {% endif %}
+                    </div>
+                    <div class="p-2 text-end">
+                        <span>{{ entry.price|intcomma }} {% translate "ISK" %}</span>
+                        <br />
+                        {% if entry.deposit %}
+                            <span>{{ entry.deposit|intcomma }} {% translate "ISK" %}</span>
+                        {% endif %}
+                    </div>
+                    <div class="p-2">
+                        <a class="btn btn-primary"
+                           href="{% url 'georgeforge:store_order_form' entry.id %}">{% translate "Order" %}</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
 {% endblock details %}
 {% block extra_javascript %}
 {% endblock extra_javascript %}
