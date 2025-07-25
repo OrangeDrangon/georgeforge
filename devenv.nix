@@ -43,5 +43,13 @@
     trufflehog.enable = true;
   };
 
+  git-hooks.hooks.djlint = {
+    enable = true;
+    package = pkgs.djlint;
+    args = [ "--reformat" ];
+    entry = "python -m djlint";
+    types = [ "html" ];
+  };
+
   devcontainer.enable = true;
 }

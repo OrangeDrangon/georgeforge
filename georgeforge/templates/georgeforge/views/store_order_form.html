@@ -2,36 +2,30 @@
 {% load i18n %}
 {% load humanize %}
 {% load static %}
-{% load django_bootstrap5 %} 
+{% load django_bootstrap5 %}
 {% block details %}
-
-<h1 class="fs-2">
-    <img
-        height="64"
-        width="64"
-        src="{{ for_sale.eve_type.icon_url }}"
-        alt="{% translate 'Ship Image' %}"
-    />
-    {% translate for_sale.eve_type.name %}
-</h1>
-<span>
-    {% if for_sale.deposit >= 0 %} 
-    {% blocktranslate with price=for_sale.price|intcomma %}Price per unit: {{ price }} ISK {% endblocktranslate %} 
-    {% else %} 
-    {% blocktranslate with price=for_sale.price|intcomma deposit=for_sale.deposit|intcomma %}Price per unit: {{ price }} ISK with {{ deposit }} ISK Deposit{{% endblocktranslate %}
-    {% endif %}
-</span>
-<div>{{ for_sale.description }}</div>
-<form
-    class="m-3"
-    method="post"
-    id="order-form"
-    action="{% url 'georgeforge:store_order_form' for_sale.id %}"
->
-    {% csrf_token %} {% bootstrap_form form %}
-    <input class="btn btn-primary" type="submit" value="Submit Order" />
-</form>
-
+    <h1 class="fs-2">
+        <img height="64"
+             width="64"
+             src="{{ for_sale.eve_type.icon_url }}"
+             alt="{% translate 'Ship Image' %}" />
+        {% translate for_sale.eve_type.name %}
+    </h1>
+    <span>
+        {% if for_sale.deposit >= 0 %}
+            {% blocktranslate with price=for_sale.price|intcomma %}Price per unit: {{ price }} ISK {% endblocktranslate %}
+        {% else %}
+            {% blocktranslate with price=for_sale.price|intcomma deposit=for_sale.deposit|intcomma %}Price per unit: {{ price }} ISK with {{ deposit }} ISK Deposit{{% endblocktranslate %}
+        {% endif %}
+    </span>
+    <div>{{ for_sale.description }}</div>
+    <form class="m-3"
+          method="post"
+          id="order-form"
+          action="{% url 'georgeforge:store_order_form' for_sale.id %}">
+        {% csrf_token %} {% bootstrap_form form %}
+        <input class="btn btn-primary" type="submit" value="Submit Order" />
+    </form>
 {% endblock details %}
 {% block extra_javascript %}
 {% endblock extra_javascript %}
