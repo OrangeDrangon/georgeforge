@@ -1,4 +1,6 @@
-# George Forge ![PyPI - Version](https://img.shields.io/pypi/v/allianceauth-georgeforge?style=for-the-badge&link=https%3A%2F%2Fpypi.org%2Fproject%2Fallianceauth-georgeforge)
+# George Forge
+
+[![PyPI - Version](https://img.shields.io/pypi/v/allianceauth-georgeforge?style=for-the-badge)](https://pypi.org/project/allianceauth-georgeforge)
 
 An app for george. I guess other people can use it if they want.
 
