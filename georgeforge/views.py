@@ -2,7 +2,9 @@
 
 # Standard Library
 import csv
+import itertools
 import logging
+from operator import attrgetter
 
 # Django
 from django.contrib import messages
@@ -40,9 +42,20 @@ def store(request: WSGIRequest) -> HttpResponse:
 
     """
 
-    for_sale = ForSale.objects.select_related().all().order_by("eve_type__eve_group_id")
+    for_sale = (
+        ForSale.objects.select_related("eve_type__eve_group")
+        .all()
+        .order_by("eve_type__eve_group__name")
+    )
 
-    context = {"for_sale": for_sale}
+    context = {
+        "for_sale": [
+            (key, list(l))
+            for key, l in itertools.groupby(
+                for_sale, key=attrgetter("eve_type.eve_group.name")
+            )
+        ]
+    }
 
     return render(request, "georgeforge/views/store.html", context)
 
