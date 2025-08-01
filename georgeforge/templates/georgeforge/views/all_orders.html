@@ -15,6 +15,7 @@
                 <th scope="col">{% translate "Paid" %}</th>
                 <th scope="col">{% translate "System" %}</th>
                 <th scope="col">{% translate "Status" %}</th>
+                <th scope="col">{% translate "Notes" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -73,6 +74,9 @@
                                             {% if entry.status == code %}selected="true"{% endif %}>{{ name }}</option>
                                 {% endfor %}
                             </select>
+                        </td>
+                        <td>
+                            <span>{{ entry.notes }}</span>
                         </td>
                         <td>
                             <input class="btn btn-primary" type="submit" value="Update" />
