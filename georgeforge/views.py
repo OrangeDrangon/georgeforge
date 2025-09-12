@@ -48,14 +48,15 @@ def store(request: WSGIRequest) -> HttpResponse:
         .order_by("eve_type__eve_group__name")
     )
 
-    context = {
-        "for_sale": [
-            (key, list(l))
-            for key, l in itertools.groupby(
-                for_sale, key=attrgetter("eve_type.eve_group.name")
-            )
-        ]
-    }
+    groups = [
+        (key, list(l))
+        for key, l in itertools.groupby(
+            for_sale, key=attrgetter("eve_type.eve_group.name")
+        )
+    ]
+    groups.sort(key=lambda pair: max(entry.price for entry in pair[1]), reverse=True)
+
+    context = {"for_sale": groups}
 
     return render(request, "georgeforge/views/store.html", context)
 
