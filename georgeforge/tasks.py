@@ -7,6 +7,9 @@ import logging
 # Third Party
 import requests
 
+from eveuniverse.tasks import update_or_create_eve_object
+from eveuniverse.models import EveType
+
 # George Forge
 from georgeforge.models import Order
 
@@ -76,3 +79,8 @@ def send_update_to_webhook(update):
             r.raise_for_status()
         except Exception as e:
             logger.error(e, exc_info=1)
+
+
+def queue_dogmas_for_items(items):
+    for i in items:
+        update_or_create_eve_object("EveType", id=i, enabled_sections=[EveType.Section.DOGMAS],task_priority=6)
