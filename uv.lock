@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10"
 
 [[package]]
@@ -191,6 +191,9 @@ discord = [
     { name = "allianceauth-discordbot" },
     { name = "py-cord" },
 ]
+webhook = [
+    { name = "py-cord" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -199,8 +202,9 @@ requires-dist = [
     { name = "django-eveuniverse", specifier = ">=1,<2" },
     { name = "django-stubs", marker = "extra == 'dev'" },
     { name = "py-cord", marker = "extra == 'discord'", specifier = ">=2,<3" },
+    { name = "py-cord", marker = "extra == 'webhook'", specifier = ">=2,<3" },
 ]
-provides-extras = ["dev", "discord"]
+provides-extras = ["dev", "discord", "webhook"]
 
 [[package]]
 name = "amqp"
