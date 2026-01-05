@@ -24,8 +24,8 @@ from eveuniverse.models import EveSolarSystem, EveType
 from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
 from georgeforge.models import DeliverySystem, ForSale, Order
 from georgeforge.tasks import (
+    send_new_order_webhook,
     send_statusupdate_dm,
-    send_update_to_webhook,
 )
 
 from . import app_settings
@@ -128,9 +128,7 @@ def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
                 on_behalf_of=on_behalf_of,
             )
 
-            send_update_to_webhook(
-                f"<@&610206372079861780> New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}, Submitted By: {request.user.profile.main_character.character_name}"
-            )
+            send_new_order_webhook(order)
 
             send_statusupdate_dm(order)
 
