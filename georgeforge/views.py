@@ -4,24 +4,25 @@
 import csv
 import itertools
 import logging
+import uuid
 from operator import attrgetter
 
 # Django
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
 
 # Alliance Auth (External Libs)
 from eveuniverse.models import EveSolarSystem, EveType
 
 # George Forge
-from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
+from georgeforge.forms import BulkImportStoreItemsForm
 from georgeforge.models import DeliverySystem, ForSale, Order
 from georgeforge.tasks import (
     send_new_order_webhook,
@@ -56,7 +57,11 @@ def store(request: WSGIRequest) -> HttpResponse:
     ]
     groups.sort(key=lambda pair: max(entry.price for entry in pair[1]), reverse=True)
 
-    context = {"for_sale": groups}
+    delivery_systems = DeliverySystem.objects.filter(enabled=True).select_related(
+        "system"
+    )
+
+    context = {"for_sale": groups, "delivery_systems": delivery_systems}
 
     return render(request, "georgeforge/views/store.html", context)
 
@@ -88,65 +93,104 @@ def my_orders(request: WSGIRequest) -> HttpResponse:
 
 @login_required
 @permission_required("georgeforge.place_order")
-def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
-    """Place order for a specific ship
+@require_POST
+def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
+    """Cart checkout API endpoint
 
     :param request: WSGIRequest:
-    :param id: int:
+    :return: JsonResponse:
 
     """
-    for_sale = ForSale.objects.get(id=id)
+    # Standard Library
+    import json
 
-    if request.method == "POST":
-        form = StoreOrderForm(request.POST)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
 
-        if form.is_valid():
-            notes = form.cleaned_data["notes"]
-            system = form.cleaned_data["delivery"].system
-            quantity = form.cleaned_data["quantity"]
+    items = data.get("items", [])
+    deliverysystem_id = data.get("deliverysystem_id")
+    notes = data.get("notes", "")
 
-            # IDK if we need to do this but it feels better
-            on_behalf_of = None
-            if request.user.has_perm("georgeforge.manage_store"):
-                on_behalf_of = form.cleaned_data["on_behalf_of"]
+    if not items:
+        return JsonResponse({"success": False, "error": "No items in cart"}, status=400)
 
-            if quantity < 1:
-                messages.error(request, _("Minimum quantity 1"))
-                return redirect("georgeforge:store")
+    if not deliverysystem_id:
+        return JsonResponse(
+            {"success": False, "error": "Delivery system required"}, status=400
+        )
 
-            order = Order.objects.create(
-                user=request.user,
-                price=for_sale.price,
-                totalcost=(for_sale.price * quantity),
-                deposit=(for_sale.deposit * quantity),
-                eve_type=for_sale.eve_type,
-                notes=notes,
-                description=for_sale.description,
-                status=Order.OrderStatus.PENDING,
-                deliverysystem=system,
-                quantity=quantity,
-                on_behalf_of=on_behalf_of,
+    try:
+        deliverysystem = EveSolarSystem.objects.get(id=deliverysystem_id)
+    except EveSolarSystem.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "Invalid delivery system"}, status=400
+        )
+
+    cart_session_id = str(uuid.uuid4())
+
+    items_dict = {}
+    for item in items:
+        for_sale_id = item.get("for_sale_id")
+        quantity = item.get("quantity", 1)
+
+        if quantity < 1:
+            return JsonResponse(
+                {"success": False, "error": "Minimum quantity 1"}, status=400
             )
 
-            send_new_order_webhook(order)
+        if for_sale_id in items_dict:
+            items_dict[for_sale_id] += quantity
+        else:
+            items_dict[for_sale_id] = quantity
 
-            send_statusupdate_dm(order)
+    orders = []
 
-            messages.success(
-                request,
-                _("Successfully ordered %(qty)d x %(name)s for %(price)s ISK")
-                % {
-                    "qty": quantity,
-                    "name": for_sale.eve_type.name,
-                    "price": intcomma(for_sale.price * quantity),
-                },
+    for for_sale_id, quantity in items_dict.items():
+        try:
+            for_sale = ForSale.objects.get(id=for_sale_id)
+        except ForSale.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "error": f"Item {for_sale_id} not found"}, status=400
             )
 
-            return redirect("georgeforge:store")
+        order = Order.objects.create(
+            user=request.user,
+            price=for_sale.price,
+            totalcost=(for_sale.price * quantity),
+            deposit=(for_sale.deposit * quantity),
+            eve_type=for_sale.eve_type,
+            notes=notes,
+            description=for_sale.description,
+            status=Order.OrderStatus.PENDING,
+            deliverysystem=deliverysystem,
+            quantity=quantity,
+            cart_session_id=cart_session_id,
+        )
 
-    context = {"for_sale": for_sale, "form": StoreOrderForm(for_user=request.user)}
+        orders.append(order)
 
-    return render(request, "georgeforge/views/store_order_form.html", context)
+    for order in orders:
+        send_new_order_webhook(order)
+        send_statusupdate_dm(order)
+
+    return JsonResponse(
+        {
+            "success": True,
+            "orders": [
+                {
+                    "id": order.id,
+                    "eve_type": order.eve_type.name,
+                    "quantity": order.quantity,
+                    "totalcost": float(order.totalcost),
+                    "deposit": float(order.deposit),
+                }
+                for order in orders
+            ],
+            "cart_session_id": cart_session_id,
+        }
+    )
 
 
 @login_required

@@ -185,3 +185,9 @@ class Order(models.Model):
         null=True,
         max_length=37,
     )
+
+    cart_session_id = models.CharField(
+        _("Cart Session ID"),
+        max_length=64,
+        db_index=True,
+    )

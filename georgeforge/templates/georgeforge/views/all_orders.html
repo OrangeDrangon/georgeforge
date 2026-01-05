@@ -10,7 +10,6 @@
             <tr>
                 <th scope="col">{% translate "Order ID" %}</th>
                 <th scope="col">{% translate "Character" %}</th>
-                <th scope="col">{% translate "On Behalf of" %}</th>
                 <th scope="col">{% translate "Item" %}</th>
                 <th scope="col">{% translate "Paid" %}</th>
                 <th scope="col">{% translate "System" %}</th>
@@ -28,7 +27,6 @@
                     <tr>
                         <th scope="row">{{ entry.id }}</th>
                         <td>{{ entry.user.profile.main_character.character_name }}</td>
-                        <td>{{ entry.on_behalf_of }}</td>
                         <td>
                             <input type="number"
                                    style="width: 50px"
@@ -92,7 +90,6 @@
             <tr>
                 <th scope="col">{% translate "Order ID" %}</th>
                 <th scope="col">{% translate "Character" %}</th>
-                <th scope="col">{% translate "On Behalf of" %}</th>
                 <th scope="col">{% translate "Item" %}</th>
                 <th scope="col">{% translate "Delivery System" %}</th>
                 <th scope="col">{% translate "Paid" %}</th>
@@ -104,7 +101,6 @@
                 <tr>
                     <th scope="row">{{ entry.id }}</th>
                     <td>{{ entry.user.profile.main_character.character_name }}</td>
-                    <td>{{ entry.on_behalf_of }}</td>
                     <td>
                         {{ entry.quantity }} x
                         <img height="24"
