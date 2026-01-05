@@ -5,13 +5,15 @@
   inputs,
   ...
 }:
-
+let
+  pkgs-unstable = import inputs.nixpkgs-unstable { system = pkgs.stdenv.system; };
+in
 {
   packages = [
     pkgs.gitFull
     pkgs.gnumake
     pkgs.libmysqlclient
-
+    pkgs-unstable.opencode
     pkgs.nixd
   ];
 
