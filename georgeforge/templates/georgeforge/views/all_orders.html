@@ -146,18 +146,26 @@
             $.fn.editable.defaults.highlight = "rgb(170, 255, 128)";
 
             function showToast(message) {
-                const toast = document.createElement("div");
-                toast.className = "position-fixed bottom-0 end-0 p-3";
-                toast.style.zIndex = "1100";
-                toast.innerHTML = `
-                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="toast-body">${message}</div>
-                    </div>
-                `;
-                document.body.appendChild(toast);
+                const toastContainer = document.createElement("div");
+                toastContainer.className = "position-fixed bottom-0 end-0 p-3";
+                toastContainer.style.zIndex = "1100";
+
+                const toastElement = document.createElement("div");
+                toastElement.className = "toast show";
+                toastElement.setAttribute("role", "alert");
+                toastElement.setAttribute("aria-live", "assertive");
+                toastElement.setAttribute("aria-atomic", "true");
+
+                const toastBody = document.createElement("div");
+                toastBody.className = "toast-body";
+                toastBody.textContent = message;
+
+                toastElement.appendChild(toastBody);
+                toastContainer.appendChild(toastElement);
+                document.body.appendChild(toastContainer);
 
                 setTimeout(() => {
-                    toast.remove();
+                    toastContainer.remove();
                 }, 3000);
             }
 
@@ -237,11 +245,32 @@
                     const paidCell = row.find('.editable-paid');
                     const totalCost = parseFloat(paidCell.data('totalcost') || '0');
                     const deposit = parseFloat(paidCell.data('deposit') || '0');
-                    let html = `<b>${formatted} / ${totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ISK</b>`;
+
+                    const formattedTotalCost = totalCost.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+
+                    const boldElement = document.createElement('b');
+                    boldElement.textContent = formatted + ' / ' + formattedTotalCost + ' ISK';
+
+                    const fragment = document.createDocumentFragment();
+                    fragment.appendChild(boldElement);
+
                     if (deposit > parseFloat(value)) {
-                        html += `<br /><small class="text-warning">(Deposit: ${deposit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ISK)</small>`;
+                        const brElement = document.createElement('br');
+                        const smallElement = document.createElement('small');
+                        smallElement.className = 'text-warning';
+                        smallElement.textContent = '(Deposit: ' + deposit.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) + ' ISK)';
+                        fragment.appendChild(brElement);
+                        fragment.appendChild(smallElement);
                     }
-                    paidCell.html(html);
+
+                    paidCell.empty();
+                    paidCell[0].appendChild(fragment);
                 },
                 success: function(response, newValue) {
                     $(this).attr('data-sort', newValue);
@@ -264,7 +293,11 @@
                         $(this).text(value);
                         $(this).attr('data-sort', value);
                     } else {
-                        $(this).html('<span class="text-muted">-</span>');
+                        const span = document.createElement('span');
+                        span.className = 'text-muted';
+                        span.textContent = '-';
+                        $(this).empty();
+                        this.appendChild(span);
                         $(this).attr('data-sort', '');
                     }
                 },
@@ -284,7 +317,7 @@
     {% include "bundles/x-editable.css.html" %}
     <style>
         .editable:hover {
-            background-color: rgb(255, 255, 204);
+            background-color: var(--bs-warning-bg-subtle);
             cursor: pointer;
             border-radius: 3px;
             padding: 2px 4px;
@@ -292,12 +325,12 @@
         }
 
         .editable-empty {
-            color: #999;
+            color: var(--bs-secondary-color);
             font-style: italic;
         }
 
         .table-hover tbody tr:hover .editable {
-            background-color: rgba(255, 255, 204, 0.7);
+            background-color: color-mix(in srgb, var(--bs-warning-bg-subtle) 70%, transparent);
         }
     </style>
 {% endblock %}

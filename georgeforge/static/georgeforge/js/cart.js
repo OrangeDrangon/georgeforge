@@ -28,18 +28,26 @@
     }
 
     function showToast(message) {
-        const toast = document.createElement("div");
-        toast.className = "position-fixed bottom-0 end-0 p-3";
-        toast.style.zIndex = "1100";
-        toast.innerHTML = `
-            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-body">${message}</div>
-            </div>
-        `;
-        document.body.appendChild(toast);
+        const toastContainer = document.createElement("div");
+        toastContainer.className = "position-fixed bottom-0 end-0 p-3";
+        toastContainer.style.zIndex = "1100";
+
+        const toastElement = document.createElement("div");
+        toastElement.className = "toast show";
+        toastElement.setAttribute("role", "alert");
+        toastElement.setAttribute("aria-live", "assertive");
+        toastElement.setAttribute("aria-atomic", "true");
+
+        const toastBody = document.createElement("div");
+        toastBody.className = "toast-body";
+        toastBody.textContent = message;
+
+        toastElement.appendChild(toastBody);
+        toastContainer.appendChild(toastElement);
+        document.body.appendChild(toastContainer);
 
         setTimeout(() => {
-            toast.remove();
+            toastContainer.remove();
         }, 3000);
     }
 
@@ -77,7 +85,7 @@
         const cartCheckout = document.getElementById("cart-checkout");
 
         if (cart.length === 0) {
-            cartItems.innerHTML = "";
+            cartItems.replaceChildren();
             cartEmpty.style.display = "block";
             cartSummary.style.display = "none";
             cartCheckout.style.display = "none";
@@ -88,7 +96,6 @@
         cartSummary.style.display = "block";
         cartCheckout.style.display = "block";
 
-        let html = "";
         let totalItems = 0;
         let totalCost = 0;
         let totalDeposit = 0;
@@ -101,44 +108,101 @@
             totalCost += itemTotalCost;
             totalDeposit += itemTotalDeposit;
 
-            html += `
-                <div class="cart-item" data-index="${index}">
-                    <div class="d-flex align-items-start gap-2">
-                        <img src="${item.icon}"
-                             width="48"
-                             height="48"
-                             alt="${item.name}" />
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">${item.name}</h6>
-                            <div class="small text-muted">
-                                ${formatISK(item.price)} / unit
-                                ${item.deposit > 0 ? `| ${formatISK(item.deposit)} deposit` : ""}
-                            </div>
-                        </div>
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger remove-from-cart"
-                                data-index="${index}">&times;</button>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-secondary decrease-quantity"
-                                    data-index="${index}">-</button>
-                            <span class="fw-bold">${item.quantity}</span>
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-secondary increase-quantity"
-                                    data-index="${index}">+</button>
-                        </div>
-                        <div class="text-end">
-                            <div class="fw-bold">${formatISK(itemTotalCost)}</div>
-                            ${item.deposit > 0 ? `<div class="small text-muted">+ ${formatISK(itemTotalDeposit)} deposit</div>` : ""}
-                        </div>
-                    </div>
-                </div>
-            `;
+            const cartItem = document.createElement("div");
+            cartItem.className = "cart-item";
+            cartItem.dataset.index = index;
+
+            const rowDiv = document.createElement("div");
+            rowDiv.className = "d-flex align-items-start gap-2";
+
+            const img = document.createElement("img");
+            img.src = item.icon;
+            img.width = 48;
+            img.height = 48;
+            img.alt = item.name;
+
+            const infoDiv = document.createElement("div");
+            infoDiv.className = "flex-grow-1";
+
+            const nameHeader = document.createElement("h6");
+            nameHeader.className = "mb-0";
+            nameHeader.textContent = item.name;
+
+            const priceDiv = document.createElement("div");
+            priceDiv.className = "small text-muted";
+            priceDiv.textContent = formatISK(item.price) + " / unit";
+            if (item.deposit > 0) {
+                priceDiv.textContent +=
+                    " | " + formatISK(item.deposit) + " deposit";
+            }
+
+            infoDiv.appendChild(nameHeader);
+            infoDiv.appendChild(priceDiv);
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className =
+                "btn btn-sm btn-outline-danger remove-from-cart";
+            removeBtn.dataset.index = index;
+            removeBtn.textContent = "×";
+
+            rowDiv.appendChild(img);
+            rowDiv.appendChild(infoDiv);
+            rowDiv.appendChild(removeBtn);
+
+            const quantityRow = document.createElement("div");
+            quantityRow.className =
+                "d-flex justify-content-between align-items-center mt-2";
+
+            const quantityControls = document.createElement("div");
+            quantityControls.className = "d-flex align-items-center gap-2";
+
+            const decreaseBtn = document.createElement("button");
+            decreaseBtn.type = "button";
+            decreaseBtn.className =
+                "btn btn-sm btn-outline-secondary decrease-quantity";
+            decreaseBtn.dataset.index = index;
+            decreaseBtn.textContent = "-";
+
+            const quantitySpan = document.createElement("span");
+            quantitySpan.className = "fw-bold";
+            quantitySpan.textContent = item.quantity;
+
+            const increaseBtn = document.createElement("button");
+            increaseBtn.type = "button";
+            increaseBtn.className =
+                "btn btn-sm btn-outline-secondary increase-quantity";
+            increaseBtn.dataset.index = index;
+            increaseBtn.textContent = "+";
+
+            quantityControls.appendChild(decreaseBtn);
+            quantityControls.appendChild(quantitySpan);
+            quantityControls.appendChild(increaseBtn);
+
+            const totalDiv = document.createElement("div");
+            totalDiv.className = "text-end";
+
+            const costDiv = document.createElement("div");
+            costDiv.className = "fw-bold";
+            costDiv.textContent = formatISK(itemTotalCost);
+            totalDiv.appendChild(costDiv);
+
+            if (item.deposit > 0) {
+                const depositDiv = document.createElement("div");
+                depositDiv.className = "small text-muted";
+                depositDiv.textContent =
+                    "+ " + formatISK(itemTotalDeposit) + " deposit";
+                totalDiv.appendChild(depositDiv);
+            }
+
+            quantityRow.appendChild(quantityControls);
+            quantityRow.appendChild(totalDiv);
+
+            cartItem.appendChild(rowDiv);
+            cartItem.appendChild(quantityRow);
+            cartItems.appendChild(cartItem);
         });
 
-        cartItems.innerHTML = html;
         document.getElementById("cart-total-items").textContent = totalItems;
         document.getElementById("cart-total-cost").textContent =
             formatISK(totalCost);
