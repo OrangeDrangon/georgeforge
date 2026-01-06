@@ -84,8 +84,9 @@
         const cartSummary = document.getElementById("cart-summary");
         const cartCheckout = document.getElementById("cart-checkout");
 
+        cartItems.replaceChildren();
+
         if (cart.length === 0) {
-            cartItems.replaceChildren();
             cartEmpty.style.display = "block";
             cartSummary.style.display = "none";
             cartCheckout.style.display = "none";
