@@ -8,83 +8,10 @@
     <div class="table-responsive">
         <table class="table table-hover table-striped w-100"
                id="table-active-orders">
-            <thead>
-                <tr>
-                    <th>{% translate "Order ID" %}</th>
-                    <th>{% translate "Character" %}</th>
-                    <th>{% translate "Item" %}</th>
-                    <th>{% translate "Quantity" %}</th>
-                    <th>{% translate "Delivery System" %}</th>
-                    <th>{% translate "Paid" %}</th>
-                    <th>{% translate "Status" %}</th>
-                    <th>{% translate "Est. Delivery" %}</th>
-                    <th>{% translate "Notes" %}</th>
-                </tr>
-            </thead>
+            {% include "georgeforge/partials/order_table_header.html" with show_character=True show_estimated_delivery=True show_notes=True %}
             <tbody>
                 {% for entry in all_orders %}
-                    <tr data-order-id="{{ entry.id }}">
-                        <td>{{ entry.id }}</td>
-                        <td>{{ entry.user.profile.main_character.character_name }}</td>
-                        <td>
-                            <img height="24"
-                                 width="24"
-                                 src="{{ entry.eve_type.icon_url }}"
-                                 alt="{% translate 'Item Icon' %}" />
-                            {{ entry.eve_type.name }}
-                        </td>
-                        <td data-sort="{{ entry.quantity }}">{{ entry.quantity }}</td>
-                        <td class="editable-system"
-                            data-name="system"
-                            data-type="select"
-                            data-pk="{{ entry.id }}"
-                            data-url="{% url 'georgeforge:order_update_system' entry.id %}"
-                            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
-                            data-value="{{ entry.deliverysystem_id }}"
-                            data-sort="{{ entry.deliverysystem.name }}">{{ entry.deliverysystem.name }}</td>
-                        <td class="editable-paid text-end"
-                            data-name="paid"
-                            data-type="number"
-                            data-pk="{{ entry.id }}"
-                            data-url="{% url 'georgeforge:order_update_paid' entry.id %}"
-                            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
-                            data-value="{{ entry.paid }}"
-                            data-totalcost="{{ entry.totalcost }}"
-                            data-deposit="{{ entry.deposit }}"
-                            data-step="0.01"
-                            data-min="0"
-                            data-sort="{{ entry.paid }}">
-                            {{ entry.paid|intcomma }} / {{ entry.totalcost|intcomma }} ISK
-                            {% if entry.deposit > entry.paid %}
-                                <br />
-                                <small class="text-warning">(Deposit: {{ entry.deposit|intcomma }} ISK)</small>
-                            {% endif %}
-                        </td>
-                        <td class="editable-status"
-                            data-name="status"
-                            data-type="select"
-                            data-pk="{{ entry.id }}"
-                            data-url="{% url 'georgeforge:order_update_status' entry.id %}"
-                            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
-                            data-value="{{ entry.status }}"
-                            data-sort="{{ entry.status }}">{{ entry.get_status_display }}</td>
-                        <td class="editable-estimated-date"
-                            data-name="estimated_delivery_date"
-                            data-type="text"
-                            data-pk="{{ entry.id }}"
-                            data-url="{% url 'georgeforge:order_update_estimated_date' entry.id %}"
-                            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
-                            data-value="{{ entry.estimated_delivery_date }}"
-                            data-placeholder="YYYY-MM-DD"
-                            data-sort="{{ entry.estimated_delivery_date }}">
-                            {% if entry.estimated_delivery_date %}
-                                {{ entry.estimated_delivery_date }}
-                            {% else %}
-                                <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ entry.notes }}</td>
-                    </tr>
+                    {% include "georgeforge/partials/order_table_row.html" with entry=entry editable=True show_character=True show_estimated_delivery=True show_notes=True %}
                 {% endfor %}
             </tbody>
         </table>
@@ -93,42 +20,10 @@
     <div class="table-responsive">
         <table class="table table-hover table-striped w-100"
                id="table-completed-orders">
-            <thead>
-                <tr>
-                    <th>{% translate "Order ID" %}</th>
-                    <th>{% translate "Character" %}</th>
-                    <th>{% translate "Item" %}</th>
-                    <th>{% translate "Quantity" %}</th>
-                    <th>{% translate "Delivery System" %}</th>
-                    <th>{% translate "Paid" %}</th>
-                    <th>{% translate "Status" %}</th>
-                    <th>{% translate "Est. Delivery" %}</th>
-                </tr>
-            </thead>
+            {% include "georgeforge/partials/order_table_header.html" with show_character=True show_estimated_delivery=True show_notes=False %}
             <tbody>
                 {% for entry in done_orders %}
-                    <tr>
-                        <td>{{ entry.id }}</td>
-                        <td>{{ entry.user.profile.main_character.character_name }}</td>
-                        <td>
-                            <img height="24"
-                                 width="24"
-                                 src="{{ entry.eve_type.icon_url }}"
-                                 alt="{% translate 'Item Icon' %}" />
-                            {{ entry.eve_type.name }}
-                        </td>
-                        <td>{{ entry.quantity }}</td>
-                        <td>{{ entry.deliverysystem.name }}</td>
-                        <td data-sort="{{ entry.paid }}">{{ entry.paid|intcomma }} / {{ entry.totalcost|intcomma }} ISK</td>
-                        <td>{{ entry.get_status_display }}</td>
-                        <td>
-                            {% if entry.estimated_delivery_date %}
-                                {{ entry.estimated_delivery_date }}
-                            {% else %}
-                                <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                    </tr>
+                    {% include "georgeforge/partials/order_table_row.html" with entry=entry editable=False show_character=True show_estimated_delivery=True show_notes=False %}
                 {% endfor %}
             </tbody>
         </table>
@@ -139,200 +34,14 @@
     {% include "bundles/x-editable-js.html" %}
     {% include "bundles/moment-js.html" %}
     {% get_datatables_language_static LANGUAGE_CODE as DT_LANG_PATH %}
-    <script>
-        $(document).ready(() => {
-            $.fn.editable.defaults.mode = 'inline';
-            $.fn.editable.defaults.showbuttons = false;
-            $.fn.editable.defaults.highlight = "rgb(170, 255, 128)";
-
-            function showToast(message) {
-                const toastContainer = document.createElement("div");
-                toastContainer.className = "position-fixed bottom-0 end-0 p-3";
-                toastContainer.style.zIndex = "1100";
-
-                const toastElement = document.createElement("div");
-                toastElement.className = "toast show";
-                toastElement.setAttribute("role", "alert");
-                toastElement.setAttribute("aria-live", "assertive");
-                toastElement.setAttribute("aria-atomic", "true");
-
-                const toastBody = document.createElement("div");
-                toastBody.className = "toast-body";
-                toastBody.textContent = message;
-
-                toastElement.appendChild(toastBody);
-                toastContainer.appendChild(toastElement);
-                document.body.appendChild(toastContainer);
-
-                setTimeout(() => {
-                    toastContainer.remove();
-                }, 3000);
-            }
-
-            const activeOrdersTable = $('#table-active-orders').DataTable({
-                "language": {"url": '{{ DT_LANG_PATH }}'},
-                "order": [[0, "desc"]],
-                "pageLength": 10,
-                "lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
-                "columnDefs": [
-                    { "orderable": false, "targets": [8] }
-                ],
-                "stateSave": true,
-                "stateDuration": 0
-            });
-
-            const completedOrdersTable = $('#table-completed-orders').DataTable({
-                "language": {"url": '{{ DT_LANG_PATH }}'},
-                "order": [[0, "desc"]],
-                "pageLength": 10,
-                "lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
-                "stateSave": true,
-                "stateDuration": 0
-            });
-
-            const systemOptions = {
-                {% for id,name in dsystems %}
-                "{{ id }}": "{{ name }}",
-                {% endfor %}
-            };
-
-            $('.editable-system').editable({
-                source: systemOptions,
-                display: function(value, response) {
-                    $(this).text(response.newValueDisplay);
-                },
-                success: function(response, newValue) {
-                    $(this).attr('data-sort', response.newValueDisplay);
-                    showToast('Delivery system updated successfully');
-                },
-                validate: function(value) {
-                    if (value === null || value === '') {
-                        return 'Delivery system is required';
-                    }
-                }
-            });
-
-            const statusOptions = {
-                {% for code,name in status %}
-                "{{ code }}": "{{ name }}",
-                {% endfor %}
-            };
-
-            $('.editable-status').editable({
-                source: statusOptions,
-                display: function(value, sourceData) {
-                    $(this).text(statusOptions[value]);
-                },
-                success: function(response, newValue) {
-                    $(this).attr('data-sort', newValue);
-                    $(this).text(statusOptions[newValue]);
-                    showToast('Status updated successfully');
-                },
-                validate: function(value) {
-                    if (value === null || value === '') {
-                        return 'Status is required';
-                    }
-                }
-            });
-
-            $('.editable-paid').editable({
-                display: function(value, response) {
-                    const formatted = parseFloat(value).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                    const row = $(this).closest('tr');
-                    const paidCell = row.find('.editable-paid');
-                    const totalCost = parseFloat(paidCell.data('totalcost') || '0');
-                    const deposit = parseFloat(paidCell.data('deposit') || '0');
-
-                    const formattedTotalCost = totalCost.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-
-                    const boldElement = document.createElement('b');
-                    boldElement.textContent = formatted + ' / ' + formattedTotalCost + ' ISK';
-
-                    const fragment = document.createDocumentFragment();
-                    fragment.appendChild(boldElement);
-
-                    if (deposit > parseFloat(value)) {
-                        const brElement = document.createElement('br');
-                        const smallElement = document.createElement('small');
-                        smallElement.className = 'text-warning';
-                        smallElement.textContent = '(Deposit: ' + deposit.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) + ' ISK)';
-                        fragment.appendChild(brElement);
-                        fragment.appendChild(smallElement);
-                    }
-
-                    paidCell.empty();
-                    paidCell[0].appendChild(fragment);
-                },
-                success: function(response, newValue) {
-                    $(this).attr('data-sort', newValue);
-                    showToast('Payment updated successfully');
-                },
-                validate: function(value) {
-                    if (value === null || value === '' || isNaN(parseFloat(value))) {
-                        return 'Valid payment amount is required';
-                    }
-                    if (parseFloat(value) < 0) {
-                        return 'Negative payment not allowed';
-                    }
-                }
-            });
-
-            $('.editable-estimated-date').editable({
-                placeholder: 'YYYY-MM-DD',
-                display: function(value, response) {
-                    if (value && value.trim() !== '') {
-                        $(this).text(value);
-                        $(this).attr('data-sort', value);
-                    } else {
-                        const span = document.createElement('span');
-                        span.className = 'text-muted';
-                        span.textContent = '-';
-                        $(this).empty();
-                        this.appendChild(span);
-                        $(this).attr('data-sort', '');
-                    }
-                },
-                success: function(response, newValue) {
-                    if (response && response.newValue) {
-                        $(this).text(response.newValue);
-                        $(this).attr('data-sort', response.newValue);
-                    }
-                    showToast('Estimated delivery date updated successfully');
-                }
-            });
-        });
-    </script>
+    {% include "georgeforge/partials/order_table_toast.html" %}
+    {% include "georgeforge/partials/order_table_editable.html" %}
+    {% include "georgeforge/partials/order_table_javascript.html" with table_id="table-active-orders" non_sortable_columns=8 %}
+    {% include "georgeforge/partials/order_table_javascript.html" with table_id="table-completed-orders" %}
 {% endblock %}
 {% block extra_css %}
     {% include "bundles/datatables-css-bs5.html" %}
     {% include "bundles/x-editable.css.html" %}
-    <style>
-        .editable:hover {
-            background-color: var(--bs-warning-bg-subtle);
-            cursor: pointer;
-            border-radius: 3px;
-            padding: 2px 4px;
-            margin: -2px -4px;
-        }
-
-        .editable-empty {
-            color: var(--bs-secondary-color);
-            font-style: italic;
-        }
-
-        .table-hover tbody tr:hover .editable {
-            background-color: color-mix(in srgb, var(--bs-warning-bg-subtle) 70%, transparent);
-        }
-    </style>
+    {% include "georgeforge/partials/order_table_editable.css.html" %}
 {% endblock %}
-{% block extra_script %}
-{% endblock %}
+{% block extra_script %}{% endblock %}

@@ -1,0 +1,25 @@
+<script>
+    function showToast(message) {
+        const toastContainer = document.createElement("div");
+        toastContainer.className = "position-fixed bottom-0 end-0 p-3";
+        toastContainer.style.zIndex = "1100";
+
+        const toastElement = document.createElement("div");
+        toastElement.className = "toast show";
+        toastElement.setAttribute("role", "alert");
+        toastElement.setAttribute("aria-live", "assertive");
+        toastElement.setAttribute("aria-atomic", "true");
+
+        const toastBody = document.createElement("div");
+        toastBody.className = "toast-body";
+        toastBody.textContent = message;
+
+        toastElement.appendChild(toastBody);
+        toastContainer.appendChild(toastElement);
+        document.body.appendChild(toastContainer);
+
+        setTimeout(() => {
+            toastContainer.remove();
+        }, 3000);
+    }
+</script>

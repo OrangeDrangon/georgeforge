@@ -5,82 +5,40 @@
 {% load django_bootstrap5 %}
 {% block details %}
     {% include "georgeforge/partials/discord_notice.html" %}
-    <h4>In Progress Orders</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">{% translate "Order ID" %}</th>
-                <th scope="col">{% translate "Item" %}</th>
-                <th scope="col">{% translate "Delivery System" %}</th>
-                <th scope="col">{% translate "Paid" %}</th>
-                <th scope="col">{% translate "Status" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in my_orders %}
-                <tr>
-                    <th scope="row">{{ entry.id }}</th>
-                    <td>
-                        {{ entry.quantity }} x
-                        <img height="24"
-                             width="24"
-                             src="{{ entry.eve_type.icon_url }}"
-                             alt="{% translate 'Item Icon' %}" />
-                        {% translate entry.eve_type.name %}
-                    </td>
-                    <td>{% translate entry.deliverysystem.name %}</td>
-                    <td>
-                        {{ entry.paid|intcomma }}/{{ entry.totalcost|intcomma }} ISK
-                        {% if entry.deposit > entry.paid and entry.status == 20 %}
-                            <br />
-                            <b>Deposit due: {{ entry.deposit|intcomma }} ISK</b>
-                        {% endif %}
-                    </td>
-                    <td>{% translate entry.get_status_display %}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <h4>Completed Orders</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">{% translate "Order ID" %}</th>
-                <th scope="col">{% translate "Item" %}</th>
-                <th scope="col">{% translate "Delivery System" %}</th>
-                <th scope="col">{% translate "Paid" %}</th>
-                <th scope="col">{% translate "Status" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in done_orders %}
-                <tr>
-                    <th scope="row">{{ entry.id }}</th>
-                    <td>
-                        {{ entry.quantity }} x
-                        <img height="24"
-                             width="24"
-                             src="{{ entry.eve_type.icon_url }}"
-                             alt="{% translate 'Item Icon' %}" />
-                        {% translate entry.eve_type.name %}
-                    </td>
-                    <td>{% translate entry.deliverysystem.name %}</td>
-                    <td>
-                        {{ entry.paid|intcomma }}/{{ entry.totalcost|intcomma }} ISK
-                        {% if entry.deposit > entry.paid and entry.status == 20 %}
-                            <br />
-                            <b>Deposit due: {{ entry.deposit|intcomma }} ISK</b>
-                        {% endif %}
-                    </td>
-                    <td>{% translate entry.get_status_display %}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <h4>{% translate "In Progress Orders" %}</h4>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped w-100"
+               id="table-my-orders-active">
+            {% include "georgeforge/partials/order_table_header.html" with show_character=False show_estimated_delivery=True show_notes=False %}
+            <tbody>
+                {% for entry in my_orders %}
+                    {% include "georgeforge/partials/order_table_row.html" with entry=entry editable=False show_character=False show_estimated_delivery=True show_notes=False %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <h4>{% translate "Completed Orders" %}</h4>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped w-100"
+               id="table-my-orders-completed">
+            {% include "georgeforge/partials/order_table_header.html" with show_character=False show_estimated_delivery=True show_notes=False %}
+            <tbody>
+                {% for entry in done_orders %}
+                    {% include "georgeforge/partials/order_table_row.html" with entry=entry editable=False show_character=False show_estimated_delivery=True show_notes=False %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock details %}
 {% block extra_javascript %}
+    {% include "bundles/datatables-js-bs5.html" %}
+    {% include "bundles/moment-js.html" %}
+    {% get_datatables_language_static LANGUAGE_CODE as DT_LANG_PATH %}
+    {% include "georgeforge/partials/order_table_javascript.html" with table_id="table-my-orders-active" %}
+    {% include "georgeforge/partials/order_table_javascript.html" with table_id="table-my-orders-completed" %}
 {% endblock extra_javascript %}
 {% block extra_css %}
+    {% include "bundles/datatables-css-bs5.html" %}
 {% endblock extra_css %}
 {% block extra_script %}
 {% endblock extra_script %}
