@@ -42,6 +42,9 @@ discord = [
     "py-cord<3,>=2",
     "allianceauth-discordbot<5,>=4",
 ]
+webhook = [
+    "py-cord<3,>=2",
+]
 
 dev = [
     "django-stubs"

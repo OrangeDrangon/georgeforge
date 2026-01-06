@@ -6,6 +6,7 @@ import logging
 
 # Third Party
 import requests
+from celery import shared_task
 
 from eveuniverse.tasks import update_or_create_eve_object
 from eveuniverse.models import EveType
@@ -18,12 +19,15 @@ from . import app_settings
 logger = logging.getLogger(__name__)
 
 # Create your tasks here
+if app_settings.webhook_available():
+    # Third Party
+    from discord import Color, Embed
+
 if app_settings.discord_bot_active():
     # Third Party
     from aadiscordbot.cogs.utils.exceptions import NotAuthenticated
     from aadiscordbot.tasks import send_message
     from aadiscordbot.utils.auth import get_discord_user_id
-    from discord import Color, Embed
 
 
 # Shamelessly yoinked from aa-securegroups/tasks.py
@@ -65,14 +69,34 @@ def send_statusupdate_dm(order):
         send_discord_dm(order.user, f"Order Updated: {order.eve_type.name}", message, c)
 
 
-def send_update_to_webhook(update):
+def send_deliverydateupdate_dm(order):
+    if app_settings.discord_bot_active():
+        if order.estimated_delivery_date:
+            message = f"Your order for {order.eve_type.name} now has an estimated delivery date: {order.estimated_delivery_date}"
+        else:
+            message = f"The estimated delivery date for your order for {order.eve_type.name} has been cleared"
+        send_discord_dm(
+            order.user,
+            f"Delivery Date Updated: {order.eve_type.name}",
+            message,
+            Color.blue(),
+        )
+
+
+@shared_task
+def send_update_to_webhook(content=None, embed=None):
     web_hook = app_settings.INDUSTRY_ADMIN_WEBHOOK
     if web_hook is not None:
         custom_headers = {"Content-Type": "application/json"}
+        payload = {}
+        if embed:
+            payload["embeds"] = [embed]
+        else:
+            payload["content"] = content or "New order update"
         r = requests.post(
             web_hook,
             headers=custom_headers,
-            data=json.dumps({"content": f"{update}"}),
+            data=json.dumps(payload),
         )
         logger.debug(f"Got status code {r.status_code} after sending ping")
         try:
@@ -80,7 +104,39 @@ def send_update_to_webhook(update):
         except Exception as e:
             logger.error(e, exc_info=1)
 
+@shared_task
+def send_new_order_webhook(order_pk):
+    if not app_settings.webhook_available():
+        return
 
-def queue_dogmas_for_items(items):
-    for i in items:
-        update_or_create_eve_object("EveType", id=i, enabled_sections=[EveType.Section.DOGMAS],task_priority=6)
+    order = Order.objects.get(pk=order_pk)
+    embed = Embed(
+        title=f"New Ship Order: {order.quantity} x {order.eve_type.name}",
+        color=Color.blue(),
+    )
+    embed.add_field(
+        name="Purchaser",
+        value=order.user.profile.main_character.character_name,
+        inline=True,
+    )
+    embed.add_field(name="Quantity", value=str(order.quantity), inline=True)
+    embed.add_field(
+        name="Price per Unit",
+        value=f"{order.price:,.2f} ISK",
+        inline=True,
+    )
+    embed.add_field(
+        name="Total Cost",
+        value=f"{order.totalcost:,.2f} ISK",
+        inline=True,
+    )
+    embed.add_field(name="Deposit", value=f"{order.deposit:,.2f} ISK", inline=True)
+    embed.add_field(
+        name="Delivery System", value=order.deliverysystem.name, inline=True
+    )
+    embed.add_field(name="Status", value=order.get_status_display(), inline=True)
+    if order.description:
+        embed.add_field(name="Description", value=order.description, inline=False)
+    if order.notes:
+        embed.add_field(name="Notes", value=order.notes, inline=False)
+    send_update_to_webhook.delay(embed=embed.to_dict())

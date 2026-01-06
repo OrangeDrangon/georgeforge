@@ -1,0 +1,94 @@
+{% load humanize %}
+{% load i18n %}
+<tr {% if editable %}data-order-id="{{ entry.id }}"{% endif %}>
+    <td>{{ entry.id }}</td>
+    {% if show_character %}<td>{{ entry.user.profile.main_character.character_name }}</td>{% endif %}
+    <td>
+        <img height="24"
+             width="24"
+             src="{{ entry.eve_type.icon_url }}"
+             alt="{% translate 'Item Icon' %}" />
+        {{ entry.eve_type.name }}
+    </td>
+    <td data-sort="{{ entry.quantity }}">{{ entry.quantity }}</td>
+    {% if editable %}
+        <td class="editable-system"
+            data-name="system"
+            data-type="select"
+            data-pk="{{ entry.id }}"
+            data-url="{% url 'georgeforge:order_update_system' entry.id %}"
+            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
+            data-value="{{ entry.deliverysystem_id }}"
+            data-sort="{{ entry.deliverysystem.name }}">{{ entry.deliverysystem.name }}</td>
+    {% else %}
+        <td>{{ entry.deliverysystem.name }}</td>
+    {% endif %}
+    {% if editable %}
+        <td class="editable-paid text-end"
+            data-name="paid"
+            data-type="number"
+            data-pk="{{ entry.id }}"
+            data-url="{% url 'georgeforge:order_update_paid' entry.id %}"
+            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
+            data-value="{{ entry.paid }}"
+            data-totalcost="{{ entry.totalcost }}"
+            data-deposit="{{ entry.deposit }}"
+            data-step="0.01"
+            data-min="0"
+            data-sort="{{ entry.paid }}">
+            {{ entry.paid|intcomma }} / {{ entry.totalcost|intcomma }} ISK
+            {% if entry.deposit > entry.paid %}
+                <br />
+                <small class="text-warning">(Deposit: {{ entry.deposit|intcomma }} ISK)</small>
+            {% endif %}
+        </td>
+    {% else %}
+        <td data-sort="{{ entry.paid }}">
+            {{ entry.paid|intcomma }}/{{ entry.totalcost|intcomma }} ISK
+            {% if entry.deposit > entry.paid and entry.status == 20 %}
+                <br />
+                <b>Deposit due: {{ entry.deposit|intcomma }} ISK</b>
+            {% endif %}
+        </td>
+    {% endif %}
+    {% if editable %}
+        <td class="editable-status"
+            data-name="status"
+            data-type="select"
+            data-pk="{{ entry.id }}"
+            data-url="{% url 'georgeforge:order_update_status' entry.id %}"
+            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
+            data-value="{{ entry.status }}"
+            data-sort="{{ entry.status }}">{{ entry.get_status_display }}</td>
+    {% else %}
+        <td>{{ entry.get_status_display }}</td>
+    {% endif %}
+    {% if show_estimated_delivery %}
+        {% if editable %}
+            <td class="editable-estimated-date"
+                data-name="estimated_delivery_date"
+                data-type="text"
+                data-pk="{{ entry.id }}"
+                data-url="{% url 'georgeforge:order_update_estimated_date' entry.id %}"
+                data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
+                data-value="{{ entry.estimated_delivery_date }}"
+                data-placeholder=""
+                data-sort="{{ entry.estimated_delivery_date }}">
+                {% if entry.estimated_delivery_date %}
+                    {{ entry.estimated_delivery_date }}
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+        {% else %}
+            <td>
+                {% if entry.estimated_delivery_date %}
+                    {{ entry.estimated_delivery_date }}
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+        {% endif %}
+    {% endif %}
+    {% if show_notes %}<td>{{ entry.notes }}</td>{% endif %}
+</tr>

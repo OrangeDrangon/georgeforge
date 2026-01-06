@@ -1,0 +1,17 @@
+<script>
+    $(document).ready(() => {
+        $('#{{ table_id }}').DataTable({
+            "language": {"url": '{{ DT_LANG_PATH }}'},
+            "order": [[0, "asc"]],
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
+            {% if non_sortable_columns %}
+                "columnDefs": [
+                    { "orderable": false, "targets": [{{ non_sortable_columns }}] }
+                ],
+            {% endif %}
+            "stateSave": true,
+            "stateDuration": 0
+        });
+    });
+</script>

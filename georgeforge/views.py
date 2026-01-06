@@ -4,28 +4,30 @@
 import csv
 import itertools
 import logging
+import uuid
 from operator import attrgetter
 
 # Django
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
 
 # Alliance Auth (External Libs)
 from eveuniverse.models import EveSolarSystem, EveType
 
 # George Forge
-from georgeforge.forms import BulkImportStoreItemsForm, StoreOrderForm
+from georgeforge.forms import BulkImportStoreItemsForm
 from georgeforge.models import DeliverySystem, ForSale, Order
 from georgeforge.tasks import (
+    send_deliverydateupdate_dm,
+    send_new_order_webhook,
     send_statusupdate_dm,
-    send_update_to_webhook,
 )
 
 from . import app_settings
@@ -56,7 +58,15 @@ def store(request: WSGIRequest) -> HttpResponse:
     ]
     groups.sort(key=lambda pair: max(entry.price for entry in pair[1]), reverse=True)
 
-    context = {"for_sale": groups}
+    delivery_systems = DeliverySystem.objects.filter(enabled=True).select_related(
+        "system"
+    )
+
+    context = {
+        "for_sale": groups,
+        "delivery_systems": delivery_systems,
+        "user_id": request.user.id,
+    }
 
     return render(request, "georgeforge/views/store.html", context)
 
@@ -81,74 +91,116 @@ def my_orders(request: WSGIRequest) -> HttpResponse:
         .order_by("-id")
     )
 
-    context = {"my_orders": my_orders, "done_orders": done_orders}
+    context = {
+        "my_orders": my_orders,
+        "done_orders": done_orders,
+        "user_id": request.user.id,
+    }
 
     return render(request, "georgeforge/views/my_orders.html", context)
 
 
 @login_required
 @permission_required("georgeforge.place_order")
-def store_order_form(request: WSGIRequest, id: int) -> HttpResponse:
-    """Place order for a specific ship
+@require_POST
+def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
+    """Cart checkout API endpoint
 
     :param request: WSGIRequest:
-    :param id: int:
+    :return: JsonResponse:
 
     """
-    for_sale = ForSale.objects.get(id=id)
+    # Standard Library
+    import json
 
-    if request.method == "POST":
-        form = StoreOrderForm(request.POST)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
 
-        if form.is_valid():
-            notes = form.cleaned_data["notes"]
-            system = form.cleaned_data["delivery"].system
-            quantity = form.cleaned_data["quantity"]
+    items = data.get("items", [])
+    deliverysystem_id = data.get("deliverysystem_id")
+    notes = data.get("notes", "")
 
-            # IDK if we need to do this but it feels better
-            on_behalf_of = None
-            if request.user.has_perm("georgeforge.manage_store"):
-                on_behalf_of = form.cleaned_data["on_behalf_of"]
+    if not items:
+        return JsonResponse({"success": False, "error": "No items in cart"}, status=400)
 
-            if quantity < 1:
-                messages.error(request, _("Minimum quantity 1"))
-                return redirect("georgeforge:store")
+    if not deliverysystem_id:
+        return JsonResponse(
+            {"success": False, "error": "Delivery system required"}, status=400
+        )
 
-            order = Order.objects.create(
-                user=request.user,
-                price=for_sale.price,
-                totalcost=(for_sale.price * quantity),
-                deposit=(for_sale.deposit * quantity),
-                eve_type=for_sale.eve_type,
-                notes=notes,
-                description=for_sale.description,
-                status=Order.OrderStatus.PENDING,
-                deliverysystem=system,
-                quantity=quantity,
-                on_behalf_of=on_behalf_of,
+    try:
+        deliverysystem = EveSolarSystem.objects.get(id=deliverysystem_id)
+    except EveSolarSystem.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "Invalid delivery system"}, status=400
+        )
+
+    cart_session_id = str(uuid.uuid4())
+
+    items_dict = {}
+    for item in items:
+        for_sale_id = item.get("for_sale_id")
+        quantity = item.get("quantity", 1)
+
+        if quantity < 1:
+            return JsonResponse(
+                {"success": False, "error": "Minimum quantity 1"}, status=400
             )
 
-            send_update_to_webhook(
-                f"<@&610206372079861780> New Ship Order submitted! Ship Hull: {quantity} x {for_sale.eve_type.name}, Submitted By: {request.user.profile.main_character.character_name}"
+        if for_sale_id in items_dict:
+            items_dict[for_sale_id] += quantity
+        else:
+            items_dict[for_sale_id] = quantity
+
+    orders = []
+
+    for for_sale_id, quantity in items_dict.items():
+        try:
+            for_sale = ForSale.objects.get(id=for_sale_id)
+        except ForSale.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "error": f"Item {for_sale_id} not found"}, status=400
             )
 
-            send_statusupdate_dm(order)
+        order = Order.objects.create(
+            user=request.user,
+            price=for_sale.price,
+            totalcost=(for_sale.price * quantity),
+            deposit=(for_sale.deposit * quantity),
+            eve_type=for_sale.eve_type,
+            notes=notes,
+            description=for_sale.description,
+            status=Order.OrderStatus.PENDING,
+            deliverysystem=deliverysystem,
+            quantity=quantity,
+            estimated_delivery_date="",
+            cart_session_id=cart_session_id,
+        )
 
-            messages.success(
-                request,
-                _("Successfully ordered %(qty)d x %(name)s for %(price)s ISK")
-                % {
-                    "qty": quantity,
-                    "name": for_sale.eve_type.name,
-                    "price": intcomma(for_sale.price * quantity),
-                },
-            )
+        orders.append(order)
 
-            return redirect("georgeforge:store")
+    for order in orders:
+        send_new_order_webhook.delay(order.pk)
+        send_statusupdate_dm(order)
 
-    context = {"for_sale": for_sale, "form": StoreOrderForm(for_user=request.user)}
-
-    return render(request, "georgeforge/views/store_order_form.html", context)
+    return JsonResponse(
+        {
+            "success": True,
+            "orders": [
+                {
+                    "id": order.id,
+                    "eve_type": order.eve_type.name,
+                    "quantity": order.quantity,
+                    "totalcost": float(order.totalcost),
+                    "deposit": float(order.deposit),
+                }
+                for order in orders
+            ],
+            "cart_session_id": cart_session_id,
+        }
+    )
 
 
 @login_required
@@ -159,47 +211,6 @@ def all_orders(request: WSGIRequest) -> HttpResponse:
     :param request: WSGIRequest:
 
     """
-    if request.method == "POST":
-        id = int(request.POST.get("id"))
-        paid = float(request.POST.get("paid").strip(","))
-        status = int(request.POST.get("status"))
-        quantity = int(request.POST.get("quantity"))
-
-        if id >= 1:
-            try:
-                order = Order.objects.filter(id=id).get()
-            except IndexError:
-                messages.error(request, message=_("Not a valid order"))
-                return redirect("georgeforge:all_orders")
-
-        if float(paid) < 0.00:
-            messages.error(request, message=_("Negative payment"))
-            return redirect("georgeforge:all_orders")
-
-        if status not in dict(Order.OrderStatus.choices).keys():
-            messages.error(request, message=_("Not a valid status"))
-            return redirect("georgeforge:all_orders")
-
-        if quantity < 1:
-            messages.error(request, message=_("Cannot order 0 of things!"))
-            return redirect("georgeforge:all_orders")
-
-        deliverysystem = EveSolarSystem.objects.get(id=int(request.POST.get("system")))
-        order.paid = paid
-        old_status = order.status
-        order.status = status
-        order.deliverysystem = deliverysystem
-        order.quantity = quantity
-        order.totalcost = order.price * quantity
-        order.save()
-
-        messages.success(request, f"Order ID {id} updated!")
-
-        if order.status != old_status:
-            send_statusupdate_dm(order)
-
-        return redirect("georgeforge:all_orders")
-
     orders = (
         Order.objects.select_related()
         .filter(status__lt=Order.OrderStatus.DELIVERED)
@@ -221,6 +232,219 @@ def all_orders(request: WSGIRequest) -> HttpResponse:
     }
 
     return render(request, "georgeforge/views/all_orders.html", context)
+
+
+@login_required
+@permission_required("georgeforge.manage_store")
+@require_POST
+def order_update_status(request: WSGIRequest, order_id: int) -> JsonResponse:
+    """AJAX endpoint to update order status
+
+    :param request: WSGIRequest:
+    :param order_id: Order ID:
+    :return: JsonResponse:
+
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Order not found"}, status=404)
+
+    try:
+        status = int(request.POST.get("value"))
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {"success": False, "error": "Invalid status value"}, status=400
+        )
+
+    if status not in dict(Order.OrderStatus.choices).keys():
+        return JsonResponse(
+            {"success": False, "error": "Not a valid status"}, status=400
+        )
+
+    old_status = order.status
+    order.status = status
+    order.save()
+
+    if order.status != old_status:
+        send_statusupdate_dm(order)
+
+    logger.info(
+        f"Updated order {order_id} status from {old_status} to {status} by {request.user}"
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "pk": order_id,
+            "newValue": status,
+            "display": order.get_status_display(),
+        }
+    )
+
+
+@login_required
+@permission_required("georgeforge.manage_store")
+@require_POST
+def order_update_paid(request: WSGIRequest, order_id: int) -> JsonResponse:
+    """AJAX endpoint to update order paid amount
+
+    :param request: WSGIRequest:
+    :param order_id: Order ID:
+    :return: JsonResponse:
+
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Order not found"}, status=404)
+
+    try:
+        paid = float(request.POST.get("value").strip(","))
+    except (ValueError, TypeError, AttributeError):
+        return JsonResponse(
+            {"success": False, "error": "Invalid paid amount"}, status=400
+        )
+
+    if paid < 0.00:
+        return JsonResponse(
+            {"success": False, "error": "Negative payment not allowed"}, status=400
+        )
+
+    order.paid = paid
+    order.save()
+
+    logger.info(f"Updated order {order_id} paid amount to {paid} by {request.user}")
+
+    return JsonResponse({"success": True, "pk": order_id, "newValue": paid})
+
+
+@login_required
+@permission_required("georgeforge.manage_store")
+@require_POST
+def order_update_quantity(request: WSGIRequest, order_id: int) -> JsonResponse:
+    """AJAX endpoint to update order quantity
+
+    :param request: WSGIRequest:
+    :param order_id: Order ID:
+    :return: JsonResponse:
+
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Order not found"}, status=404)
+
+    try:
+        quantity = int(request.POST.get("value"))
+    except (ValueError, TypeError):
+        return JsonResponse({"success": False, "error": "Invalid quantity"}, status=400)
+
+    if quantity < 1:
+        return JsonResponse(
+            {"success": False, "error": "Minimum quantity is 1"}, status=400
+        )
+
+    order.quantity = quantity
+    order.totalcost = order.price * quantity
+    order.save()
+
+    logger.info(f"Updated order {order_id} quantity to {quantity} by {request.user}")
+
+    return JsonResponse({"success": True, "pk": order_id, "newValue": quantity})
+
+
+@login_required
+@permission_required("georgeforge.manage_store")
+@require_POST
+def order_update_system(request: WSGIRequest, order_id: int) -> JsonResponse:
+    """AJAX endpoint to update order delivery system
+
+    :param request: WSGIRequest:
+    :param order_id: Order ID:
+    :return: JsonResponse:
+
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Order not found"}, status=404)
+
+    try:
+        system_id = int(request.POST.get("value"))
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {"success": False, "error": "Invalid system ID"}, status=400
+        )
+
+    try:
+        deliverysystem = EveSolarSystem.objects.get(id=system_id)
+    except EveSolarSystem.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "Delivery system not found"}, status=404
+        )
+
+    order.deliverysystem = deliverysystem
+    order.save()
+
+    logger.info(
+        f"Updated order {order_id} delivery system to {system_id} by {request.user}"
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "pk": order_id,
+            "newValue": system_id,
+            "display": deliverysystem.name,
+        }
+    )
+
+
+@login_required
+@permission_required("georgeforge.manage_store")
+@require_POST
+def order_update_estimated_date(request: WSGIRequest, order_id: int) -> JsonResponse:
+    """AJAX endpoint to update order estimated delivery date
+
+    :param request: WSGIRequest:
+    :param order_id: Order ID:
+    :return: JsonResponse:
+
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Order not found"}, status=404)
+
+    date_value = request.POST.get("value")
+
+    old_date = order.estimated_delivery_date
+    if not date_value or date_value.strip() == "":
+        order.estimated_delivery_date = ""
+    else:
+        order.estimated_delivery_date = date_value.strip()
+
+    order.save()
+
+    if order.estimated_delivery_date != old_date:
+        send_deliverydateupdate_dm(order)
+
+    logger.info(
+        f"Updated order {order_id} estimated delivery date to {order.estimated_delivery_date} by {request.user}"
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "pk": order_id,
+            "newValue": (
+                str(order.estimated_delivery_date)
+                if order.estimated_delivery_date
+                else ""
+            ),
+        }
+    )
 
 
 @login_required

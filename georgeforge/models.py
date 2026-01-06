@@ -178,10 +178,15 @@ class Order(models.Model):
 
     status = models.IntegerField(_("Status"), choices=OrderStatus.choices)
 
-    on_behalf_of = models.CharField(
-        _("On behalf of"),
-        help_text=_("EVE name of person you are ordering on behalf of"),
-        blank=True,
-        null=True,
-        max_length=37,
+    cart_session_id = models.CharField(
+        _("Cart Session ID"),
+        max_length=64,
+        db_index=True,
+    )
+
+    estimated_delivery_date = models.CharField(
+        _("Estimated Delivery Date"),
+        max_length=50,
+        default="",
+        help_text=_("Estimated date when the order will be delivered"),
     )

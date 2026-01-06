@@ -1,0 +1,20 @@
+{% load i18n %}
+<thead>
+    <tr>
+        <th>{% translate "Order ID" %}</th>
+        {% if show_character %}
+            <th>{% translate "Character" %}</th>
+        {% endif %}
+        <th>{% translate "Item" %}</th>
+        <th>{% translate "Quantity" %}</th>
+        <th>{% translate "Delivery System" %}</th>
+        <th>{% translate "Paid" %}</th>
+        <th>{% translate "Status" %}</th>
+        {% if show_estimated_delivery %}
+            <th>{% translate "Est. Delivery" %}</th>
+        {% endif %}
+        {% if show_notes %}
+            <th>{% translate "Notes" %}</th>
+        {% endif %}
+    </tr>
+</thead>
