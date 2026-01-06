@@ -51,6 +51,7 @@ class OrderAdmin(ManageStoreAdmin):
         "price",
         "description",
         "notes",
-        "on_behalf_of",
+        "estimated_delivery_date",
+        "cart_session_id",
     ]
     autocomplete_fields = ["eve_type"]

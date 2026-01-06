@@ -6,6 +6,7 @@ import logging
 
 # Third Party
 import requests
+from celery import shared_task
 
 # George Forge
 from georgeforge.models import Order
@@ -65,6 +66,21 @@ def send_statusupdate_dm(order):
         send_discord_dm(order.user, f"Order Updated: {order.eve_type.name}", message, c)
 
 
+def send_deliverydateupdate_dm(order):
+    if app_settings.discord_bot_active():
+        if order.estimated_delivery_date:
+            message = f"Your order for {order.eve_type.name} now has an estimated delivery date: {order.estimated_delivery_date}"
+        else:
+            message = f"The estimated delivery date for your order for {order.eve_type.name} has been cleared"
+        send_discord_dm(
+            order.user,
+            f"Delivery Date Updated: {order.eve_type.name}",
+            message,
+            Color.blue(),
+        )
+
+
+@shared_task
 def send_update_to_webhook(content=None, embed=None):
     web_hook = app_settings.INDUSTRY_ADMIN_WEBHOOK
     if web_hook is not None:
@@ -86,10 +102,12 @@ def send_update_to_webhook(content=None, embed=None):
             logger.error(e, exc_info=1)
 
 
-def send_new_order_webhook(order):
+@shared_task
+def send_new_order_webhook(order_pk):
     if not app_settings.webhook_available():
         return
 
+    order = Order.objects.get(pk=order_pk)
     embed = Embed(
         title=f"New Ship Order: {order.quantity} x {order.eve_type.name}",
         color=Color.blue(),
@@ -115,10 +133,8 @@ def send_new_order_webhook(order):
         name="Delivery System", value=order.deliverysystem.name, inline=True
     )
     embed.add_field(name="Status", value=order.get_status_display(), inline=True)
-    if order.on_behalf_of:
-        embed.add_field(name="On Behalf Of", value=order.on_behalf_of, inline=True)
     if order.description:
         embed.add_field(name="Description", value=order.description, inline=False)
     if order.notes:
         embed.add_field(name="Notes", value=order.notes, inline=False)
-    send_update_to_webhook(embed=embed.to_dict())
+    send_update_to_webhook.delay(embed=embed.to_dict())

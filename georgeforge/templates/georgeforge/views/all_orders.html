@@ -4,122 +4,302 @@
 {% load static %}
 {% load django_bootstrap5 %}
 {% block details %}
-    <h4>In Progress Orders</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">{% translate "Order ID" %}</th>
-                <th scope="col">{% translate "Character" %}</th>
-                <th scope="col">{% translate "Item" %}</th>
-                <th scope="col">{% translate "Paid" %}</th>
-                <th scope="col">{% translate "System" %}</th>
-                <th scope="col">{% translate "Status" %}</th>
-                <th scope="col">{% translate "Notes" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in all_orders %}
-                <form method="post"
-                      id="{{ entry.id }}"
-                      action="{% url 'georgeforge:all_orders' %}">
-                    <input type="hidden" name="id" value="{{ entry.id }}" />
-                    {% csrf_token %}
-                    <tr>
-                        <th scope="row">{{ entry.id }}</th>
+    <h4>{% translate "In Progress Orders" %}</h4>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped w-100"
+               id="table-active-orders">
+            <thead>
+                <tr>
+                    <th>{% translate "Order ID" %}</th>
+                    <th>{% translate "Character" %}</th>
+                    <th>{% translate "Item" %}</th>
+                    <th>{% translate "Quantity" %}</th>
+                    <th>{% translate "Delivery System" %}</th>
+                    <th>{% translate "Paid" %}</th>
+                    <th>{% translate "Status" %}</th>
+                    <th>{% translate "Est. Delivery" %}</th>
+                    <th>{% translate "Notes" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in all_orders %}
+                    <tr data-order-id="{{ entry.id }}">
+                        <td>{{ entry.id }}</td>
                         <td>{{ entry.user.profile.main_character.character_name }}</td>
                         <td>
-                            <input type="number"
-                                   style="width: 50px"
-                                   name="quantity"
-                                   min="1"
-                                   value="{{ entry.quantity }}"
-                                   required />
-                            x
                             <img height="24"
                                  width="24"
                                  src="{{ entry.eve_type.icon_url }}"
                                  alt="{% translate 'Item Icon' %}" />
                             {{ entry.eve_type.name }}
                         </td>
-                        <td>
-                            <input type="number"
-                                   min="0.0"
-                                   step="0.01"
-                                   id="paid"
-                                   name="paid"
-                                   value="{{ entry.paid }}"
-                                   required />
-                            / {{ entry.totalcost|intcomma }} ISK
+                        <td data-sort="{{ entry.quantity }}">{{ entry.quantity }}</td>
+                        <td class="editable-system"
+                            data-name="system"
+                            data-type="select"
+                            data-pk="{{ entry.id }}"
+                            data-url="{% url 'georgeforge:order_update_system' entry.id %}"
+                            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
+                            data-value="{{ entry.deliverysystem_id }}"
+                            data-sort="{{ entry.deliverysystem.name }}">{{ entry.deliverysystem.name }}</td>
+                        <td class="editable-paid text-end"
+                            data-name="paid"
+                            data-type="number"
+                            data-pk="{{ entry.id }}"
+                            data-url="{% url 'georgeforge:order_update_paid' entry.id %}"
+                            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
+                            data-value="{{ entry.paid }}"
+                            data-totalcost="{{ entry.totalcost }}"
+                            data-deposit="{{ entry.deposit }}"
+                            data-step="0.01"
+                            data-min="0"
+                            data-sort="{{ entry.paid }}">
+                            {{ entry.paid|intcomma }} / {{ entry.totalcost|intcomma }} ISK
                             {% if entry.deposit > entry.paid %}
                                 <br />
-                                (Deposit: {{ entry.deposit|intcomma }} ISK)
+                                <small class="text-warning">(Deposit: {{ entry.deposit|intcomma }} ISK)</small>
                             {% endif %}
                         </td>
-                        <td>
-                            <select id="system" name="system">
-                                {% for id,name in dsystems %}
-                                    <option value="{{ id }}"
-                                            {% if entry.deliverysystem_id == id %}selected="true"{% endif %}>
-                                        {{ name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                        <td class="editable-status"
+                            data-name="status"
+                            data-type="select"
+                            data-pk="{{ entry.id }}"
+                            data-url="{% url 'georgeforge:order_update_status' entry.id %}"
+                            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
+                            data-value="{{ entry.status }}"
+                            data-sort="{{ entry.status }}">{{ entry.get_status_display }}</td>
+                        <td class="editable-estimated-date"
+                            data-name="estimated_delivery_date"
+                            data-type="text"
+                            data-pk="{{ entry.id }}"
+                            data-url="{% url 'georgeforge:order_update_estimated_date' entry.id %}"
+                            data-params="{csrfmiddlewaretoken:'{{ csrf_token }}'}"
+                            data-value="{{ entry.estimated_delivery_date }}"
+                            data-placeholder="YYYY-MM-DD"
+                            data-sort="{{ entry.estimated_delivery_date }}">
+                            {% if entry.estimated_delivery_date %}
+                                {{ entry.estimated_delivery_date }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
                         </td>
+                        <td>{{ entry.notes }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <h4>{% translate "Completed Orders" %}</h4>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped w-100"
+               id="table-completed-orders">
+            <thead>
+                <tr>
+                    <th>{% translate "Order ID" %}</th>
+                    <th>{% translate "Character" %}</th>
+                    <th>{% translate "Item" %}</th>
+                    <th>{% translate "Quantity" %}</th>
+                    <th>{% translate "Delivery System" %}</th>
+                    <th>{% translate "Paid" %}</th>
+                    <th>{% translate "Status" %}</th>
+                    <th>{% translate "Est. Delivery" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in done_orders %}
+                    <tr>
+                        <td>{{ entry.id }}</td>
+                        <td>{{ entry.user.profile.main_character.character_name }}</td>
                         <td>
-                            <select id="status" name="status">
-                                {% for code,name in status %}
-                                    <option value="{{ code }}"
-                                            {% if entry.status == code %}selected="true"{% endif %}>{{ name }}</option>
-                                {% endfor %}
-                            </select>
+                            <img height="24"
+                                 width="24"
+                                 src="{{ entry.eve_type.icon_url }}"
+                                 alt="{% translate 'Item Icon' %}" />
+                            {{ entry.eve_type.name }}
                         </td>
+                        <td>{{ entry.quantity }}</td>
+                        <td>{{ entry.deliverysystem.name }}</td>
+                        <td data-sort="{{ entry.paid }}">{{ entry.paid|intcomma }} / {{ entry.totalcost|intcomma }} ISK</td>
+                        <td>{{ entry.get_status_display }}</td>
                         <td>
-                            <span>{{ entry.notes }}</span>
-                        </td>
-                        <td>
-                            <input class="btn btn-primary" type="submit" value="Update" />
+                            {% if entry.estimated_delivery_date %}
+                                {{ entry.estimated_delivery_date }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
                         </td>
                     </tr>
-                </form>
-            {% endfor %}
-        </tbody>
-    </table>
-    <h4>Completed Orders</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">{% translate "Order ID" %}</th>
-                <th scope="col">{% translate "Character" %}</th>
-                <th scope="col">{% translate "Item" %}</th>
-                <th scope="col">{% translate "Delivery System" %}</th>
-                <th scope="col">{% translate "Paid" %}</th>
-                <th scope="col">{% translate "Status" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in done_orders %}
-                <tr>
-                    <th scope="row">{{ entry.id }}</th>
-                    <td>{{ entry.user.profile.main_character.character_name }}</td>
-                    <td>
-                        {{ entry.quantity }} x
-                        <img height="24"
-                             width="24"
-                             src="{{ entry.eve_type.icon_url }}"
-                             alt="{% translate 'Item Icon' %}" />
-                        {{ entry.eve_type.name }}
-                    </td>
-                    <td>{{ entry.deliverysystem.name }}</td>
-                    <td>{{ entry.paid|intcomma }}/{{ entry.totalcost|intcomma }} ISK</td>
-                    <td>{{ entry.get_status_display }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock details %}
 {% block extra_javascript %}
-{% endblock extra_javascript %}
+    {% include "bundles/datatables-js-bs5.html" %}
+    {% include "bundles/x-editable-js.html" %}
+    {% include "bundles/moment-js.html" %}
+    {% get_datatables_language_static LANGUAGE_CODE as DT_LANG_PATH %}
+    <script>
+        $(document).ready(() => {
+            $.fn.editable.defaults.mode = 'inline';
+            $.fn.editable.defaults.showbuttons = false;
+            $.fn.editable.defaults.highlight = "rgb(170, 255, 128)";
+
+            function showToast(message) {
+                const toast = document.createElement("div");
+                toast.className = "position-fixed bottom-0 end-0 p-3";
+                toast.style.zIndex = "1100";
+                toast.innerHTML = `
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-body">${message}</div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+
+            const activeOrdersTable = $('#table-active-orders').DataTable({
+                "language": {"url": '{{ DT_LANG_PATH }}'},
+                "order": [[0, "desc"]],
+                "pageLength": 10,
+                "lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [8] }
+                ],
+                "stateSave": true,
+                "stateDuration": 0
+            });
+
+            const completedOrdersTable = $('#table-completed-orders').DataTable({
+                "language": {"url": '{{ DT_LANG_PATH }}'},
+                "order": [[0, "desc"]],
+                "pageLength": 10,
+                "lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
+                "stateSave": true,
+                "stateDuration": 0
+            });
+
+            const systemOptions = {
+                {% for id,name in dsystems %}
+                "{{ id }}": "{{ name }}",
+                {% endfor %}
+            };
+
+            $('.editable-system').editable({
+                source: systemOptions,
+                display: function(value, response) {
+                    $(this).text(response.newValueDisplay);
+                },
+                success: function(response, newValue) {
+                    $(this).attr('data-sort', response.newValueDisplay);
+                    showToast('Delivery system updated successfully');
+                },
+                validate: function(value) {
+                    if (value === null || value === '') {
+                        return 'Delivery system is required';
+                    }
+                }
+            });
+
+            const statusOptions = {
+                {% for code,name in status %}
+                "{{ code }}": "{{ name }}",
+                {% endfor %}
+            };
+
+            $('.editable-status').editable({
+                source: statusOptions,
+                display: function(value, sourceData) {
+                    $(this).text(statusOptions[value]);
+                },
+                success: function(response, newValue) {
+                    $(this).attr('data-sort', newValue);
+                    $(this).text(statusOptions[newValue]);
+                    showToast('Status updated successfully');
+                },
+                validate: function(value) {
+                    if (value === null || value === '') {
+                        return 'Status is required';
+                    }
+                }
+            });
+
+            $('.editable-paid').editable({
+                display: function(value, response) {
+                    const formatted = parseFloat(value).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    const row = $(this).closest('tr');
+                    const paidCell = row.find('.editable-paid');
+                    const totalCost = parseFloat(paidCell.data('totalcost') || '0');
+                    const deposit = parseFloat(paidCell.data('deposit') || '0');
+                    let html = `<b>${formatted} / ${totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ISK</b>`;
+                    if (deposit > parseFloat(value)) {
+                        html += `<br /><small class="text-warning">(Deposit: ${deposit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ISK)</small>`;
+                    }
+                    paidCell.html(html);
+                },
+                success: function(response, newValue) {
+                    $(this).attr('data-sort', newValue);
+                    showToast('Payment updated successfully');
+                },
+                validate: function(value) {
+                    if (value === null || value === '' || isNaN(parseFloat(value))) {
+                        return 'Valid payment amount is required';
+                    }
+                    if (parseFloat(value) < 0) {
+                        return 'Negative payment not allowed';
+                    }
+                }
+            });
+
+            $('.editable-estimated-date').editable({
+                placeholder: 'YYYY-MM-DD',
+                display: function(value, response) {
+                    if (value && value.trim() !== '') {
+                        $(this).text(value);
+                        $(this).attr('data-sort', value);
+                    } else {
+                        $(this).html('<span class="text-muted">-</span>');
+                        $(this).attr('data-sort', '');
+                    }
+                },
+                success: function(response, newValue) {
+                    if (response && response.newValue) {
+                        $(this).text(response.newValue);
+                        $(this).attr('data-sort', response.newValue);
+                    }
+                    showToast('Estimated delivery date updated successfully');
+                }
+            });
+        });
+    </script>
+{% endblock %}
 {% block extra_css %}
-{% endblock extra_css %}
+    {% include "bundles/datatables-css-bs5.html" %}
+    {% include "bundles/x-editable.css.html" %}
+    <style>
+        .editable:hover {
+            background-color: rgb(255, 255, 204);
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 2px 4px;
+            margin: -2px -4px;
+        }
+
+        .editable-empty {
+            color: #999;
+            font-style: italic;
+        }
+
+        .table-hover tbody tr:hover .editable {
+            background-color: rgba(255, 255, 204, 0.7);
+        }
+    </style>
+{% endblock %}
 {% block extra_script %}
-{% endblock extra_script %}
+{% endblock %}
