@@ -4,10 +4,7 @@
     <td>{{ entry.id }}</td>
     {% if show_character %}<td>{{ entry.user.profile.main_character.character_name }}</td>{% endif %}
     <td>
-        <img height="24"
-             width="24"
-             src="{{ entry.eve_type.icon_url }}"
-             alt="{% translate 'Item Icon' %}" />
+        {{ entry.eve_type.id|evetype_icon }}
         {{ entry.eve_type.name }}
     </td>
     <td data-sort="{{ entry.quantity }}">{{ entry.quantity }}</td>

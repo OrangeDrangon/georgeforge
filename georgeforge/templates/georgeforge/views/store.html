@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load humanize %}
 {% load static %}
+{% load georgeforge_extras %}
 {% load django_bootstrap5 %}
 {% block details %}
     {% include "georgeforge/partials/discord_notice.html" %}
@@ -39,10 +40,7 @@
                         data-description="{{ entry.description }}">
                         <div class="p-2">
                             <span>
-                                <img height="64"
-                                     width="64"
-                                     src="{{ entry.eve_type.icon_url }}"
-                                     alt="{% translate 'Item Icon' %}" />
+                                {{ entry.eve_type|evetype_icon:64|safe }}
                             </span>
                             <span>{% translate entry.eve_type.name %}</span>
                         </div>
@@ -162,6 +160,11 @@
         }
         .cart-item:last-child {
             border-bottom: none;
+        }
+        .pip {
+            display: block;
+            position: absolute;
+            top: 16px;
         }
     </style>
 {% endblock extra_css %}
