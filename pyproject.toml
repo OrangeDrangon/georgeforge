@@ -35,6 +35,7 @@ dynamic = [
 dependencies = [
     "allianceauth<5,>=4",
     "django-eveuniverse<2,>=1",
+    "django-eveonline-sde",
 ]
 
 [project.optional-dependencies]

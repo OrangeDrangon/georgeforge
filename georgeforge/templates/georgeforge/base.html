@@ -1,5 +1,6 @@
 {% extends "allianceauth/base-bs5.html" %}
 {% load i18n %}
+{% load static %}
 {% block page_title %}
     {% translate "George Forge" %}
 {% endblock page_title %}
@@ -15,3 +16,12 @@
         {% endblock details %}
     </div>
 {% endblock content %}
+{% block extra_css %}
+    <style>
+        .pip {
+            display: block;
+            position: absolute;
+            top: 16px;
+        }
+    </style>
+{% endblock extra_css %}

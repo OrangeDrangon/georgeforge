@@ -8,6 +8,9 @@ import logging
 import requests
 from celery import shared_task
 
+from eveuniverse.tasks import update_or_create_eve_object
+from eveuniverse.models import EveType
+
 # George Forge
 from georgeforge.models import Order
 
@@ -100,7 +103,6 @@ def send_update_to_webhook(content=None, embed=None):
             r.raise_for_status()
         except Exception as e:
             logger.error(e, exc_info=1)
-
 
 @shared_task
 def send_new_order_webhook(order_pk):
