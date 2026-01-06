@@ -62,7 +62,11 @@ def store(request: WSGIRequest) -> HttpResponse:
         "system"
     )
 
-    context = {"for_sale": groups, "delivery_systems": delivery_systems}
+    context = {
+        "for_sale": groups,
+        "delivery_systems": delivery_systems,
+        "user_id": request.user.id,
+    }
 
     return render(request, "georgeforge/views/store.html", context)
 
@@ -87,7 +91,11 @@ def my_orders(request: WSGIRequest) -> HttpResponse:
         .order_by("-id")
     )
 
-    context = {"my_orders": my_orders, "done_orders": done_orders}
+    context = {
+        "my_orders": my_orders,
+        "done_orders": done_orders,
+        "user_id": request.user.id,
+    }
 
     return render(request, "georgeforge/views/my_orders.html", context)
 

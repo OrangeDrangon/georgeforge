@@ -1,0 +1,10 @@
+{% load i18n %}
+{% load georgeforge_extras %}
+{% if not user_id|has_discord_linked %}
+    <div class="alert alert-info" role="alert">
+        <strong>{% translate "Heads up!" %}</strong>
+        {% translate "Link your Discord account on the" %}
+        <a href="{% url 'services:services' %}">{% translate "services page" %}</a>
+        {% translate "to receive order updates." %}
+    </div>
+{% endif %}
