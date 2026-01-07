@@ -35,7 +35,7 @@ dynamic = [
 dependencies = [
     "allianceauth<5,>=4",
     "django-eveuniverse<2,>=1",
-    "django-eveonline-sde",
+    "django-eveonline-sde @ git+https://github.com/Solar-Helix-Independent-Transport/django-eveonline-sde.git",
 ]
 
 [project.optional-dependencies]
@@ -50,6 +50,9 @@ webhook = [
 dev = [
     "django-stubs"
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.version]
 path = "georgeforge/__init__.py"

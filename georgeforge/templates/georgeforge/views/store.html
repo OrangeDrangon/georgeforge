@@ -7,14 +7,7 @@
 {% block details %}
     {% include "georgeforge/partials/discord_notice.html" %}
     <div class="row mb-3">
-        <div class="col-12 col-md-6">
-            <input id="store-search"
-                   type="search"
-                   class="form-control"
-                   placeholder="{% translate 'Search store...' %}"
-                   aria-label="{% translate 'Search store' %}" />
-        </div>
-        <div class="col-12 col-md-6 text-end">
+        <div class="col-12 ms-auto text-end">
             <button id="cart-toggle"
                     class="btn btn-primary position-relative"
                     type="button">
@@ -25,56 +18,66 @@
             </button>
         </div>
     </div>
-    {% for group_name, entries in for_sale %}
-        <div class="store-group" data-group="{{ group_name }}">
-            <h4>{{ group_name }}</h4>
-            <ul class="list-group pb-2">
-                {% for entry in entries %}
-                    <li class="list-group-item store-item d-flex flex-row align-items-center justify-content-start"
-                        data-for-sale-id="{{ entry.id }}"
-                        data-eve-type-id="{{ entry.eve_type.id }}"
-                        data-eve-type-name="{{ entry.eve_type.name }}"
-                        data-eve-type-icon="{{ entry.eve_type.icon_url }}"
-                        data-price="{{ entry.price }}"
-                        data-deposit="{{ entry.deposit }}"
-                        data-description="{{ entry.description }}">
-                        <div class="p-2">
-                            <span>
-                                {{ entry.eve_type|evetype_icon:64|safe }}
-                            </span>
-                            <span>{% translate entry.eve_type.name %}</span>
-                        </div>
-                        <div class="p-2 flex-grow-1">
-                            <span>{{ entry.description|safe }}</span>
-                        </div>
-                        <div class="p-2 text-start">
-                            <span>{% translate "Price" %}:</span>
-                            <br />
-                            {% if entry.deposit %}
-                                <span>{% translate "Deposit" %}:</span>
-                            {% endif %}
-                        </div>
-                        <div class="p-2 text-end">
-                            <span>{{ entry.price|intcomma }} {% translate "ISK" %}</span>
-                            <br />
-                            {% if entry.deposit %}
-                                <span>{{ entry.deposit|intcomma }} {% translate "ISK" %}</span>
-                            {% endif %}
-                        </div>
-                        <div class="p-2 d-flex align-items-center gap-2">
-                            <input type="number"
-                                   class="form-control form-control-sm"
-                                   id="quantity-{{ entry.id }}"
-                                   value="1"
-                                   min="1"
-                                   style="width: 80px" />
-                            <button class="btn btn-primary add-to-cart" data-for-sale-id="{{ entry.id }}">{% translate "Add to Cart" %}</button>
-                        </div>
-                    </li>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped w-100" id="table-store">
+            <thead>
+                <tr>
+                    <th class="d-none">{% translate "Group Order" %}</th>
+                    <th class="d-none">{% translate "Group Name" %}</th>
+                    <th>{% translate "Item" %}</th>
+                    <th>{% translate "Description" %}</th>
+                    <th>{% translate "Price" %}</th>
+                    <th>{% translate "Deposit" %}</th>
+                    <th class="text-end">{% translate "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group_name, entries in for_sale %}
+                    {% for entry in entries %}
+                        <tr class="store-item"
+                            data-for-sale-id="{{ entry.id }}"
+                            data-eve-type-id="{{ entry.eve_type.id }}"
+                            data-eve-type-name="{{ entry.eve_type.name }}"
+                            data-eve-type-icon="{{ entry.eve_type.icon_url }}"
+                            data-price="{{ entry.price }}"
+                            data-deposit="{{ entry.deposit }}"
+                            data-description="{{ entry.description }}"
+                            data-group="{{ group_name }}">
+                            <td class="d-none group-order">{{ forloop.parentloop.counter0 }}</td>
+                            <td class="d-none group-name">{{ group_name }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="position-relative" style="width: 32px; height: 32px;">{{ entry.eve_type|evetype_icon:32|safe }}</div>
+                                    <span>{% translate entry.eve_type.name %}</span>
+                                </div>
+                            </td>
+                            <td>{{ entry.description|safe }}</td>
+                            <td data-sort="{{ entry.price }}">{{ entry.price|intcomma }} ISK</td>
+                            <td data-sort="{{ entry.deposit }}">
+                                {% if entry.deposit %}
+                                    {{ entry.deposit|intcomma }} ISK
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2 justify-content-end">
+                                    <input type="number"
+                                           class="form-control form-control-sm quantity-input"
+                                           id="quantity-{{ entry.id }}"
+                                           value="1"
+                                           min="1"
+                                           style="width: 80px" />
+                                    <button class="btn btn-primary btn-sm add-to-cart"
+                                            data-for-sale-id="{{ entry.id }}">{% translate "Add" %}</button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
-            </ul>
-        </div>
-    {% endfor %}
+            </tbody>
+        </table>
+    </div>
     <div id="cart-overlay" class="cart-overlay"></div>
     <div id="cart-drawer" class="cart-drawer">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -120,11 +123,25 @@
     </div>
 {% endblock details %}
 {% block extra_javascript %}
-    <script src="{% static 'georgeforge/js/store-search.js' %}"></script>
+    {% include "bundles/datatables-js-bs5.html" %}
+    {% include "bundles/moment-js.html" %}
+    {% get_datatables_language_static LANGUAGE_CODE as DT_LANG_PATH %}
+    <script src="{% static 'georgeforge/js/store-table.js' %}"></script>
     <script src="{% static 'georgeforge/js/cart.js' %}"></script>
 {% endblock extra_javascript %}
 {% block extra_css %}
+    {% include "bundles/datatables-css-bs5.html" %}
     <style>
+            .group-row th {
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 2px solid var(--bs-border-color);
+        }
+        .pip {
+            display: block;
+            position: absolute;
+            top: 0px;
+        }
         .cart-drawer {
             position: fixed;
             top: 0;
@@ -160,11 +177,6 @@
         }
         .cart-item:last-child {
             border-bottom: none;
-        }
-        .pip {
-            display: block;
-            position: absolute;
-            top: 16px;
         }
     </style>
 {% endblock extra_css %}
