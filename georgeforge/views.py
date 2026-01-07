@@ -185,6 +185,14 @@ def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
         send_new_order_webhook.delay(order.pk)
         send_statusupdate_dm(order)
 
+    total_deposit = sum(float(order.deposit) for order in orders)
+    deposit_instructions = (
+        app_settings.ORDER_DEPOSIT_INSTRUCTIONS if total_deposit > 0 else None
+    )
+
+    if deposit_instructions:
+        messages.success(request, _(deposit_instructions))
+
     return JsonResponse(
         {
             "success": True,
@@ -199,6 +207,7 @@ def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
                 for order in orders
             ],
             "cart_session_id": cart_session_id,
+            "deposit_instructions": deposit_instructions,
         }
     )
 

@@ -82,6 +82,16 @@ def send_statusupdate_dm(order):
             e.add_field(name="Description", value=order.description, inline=False)
         if order.notes:
             e.add_field(name="Notes", value=order.notes, inline=False)
+        if (
+            order.status == Order.OrderStatus.PENDING
+            and order.deposit > 0
+            and app_settings.ORDER_DEPOSIT_INSTRUCTIONS
+        ):
+            e.add_field(
+                name="Deposit Instructions",
+                value=app_settings.ORDER_DEPOSIT_INSTRUCTIONS,
+                inline=False,
+            )
 
         try:
             send_message(user_id=get_discord_user_id(order.user), embed=e)
