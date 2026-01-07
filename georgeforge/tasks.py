@@ -88,8 +88,10 @@ def send_update_to_webhook(content=None, embed=None):
         payload = {}
         if embed:
             payload["embeds"] = [embed]
-        else:
-            payload["content"] = content or "New order update"
+        if content:
+            payload["content"] = content
+        elif not embed:
+            payload["content"] = "New order update"
         r = requests.post(
             web_hook,
             headers=custom_headers,
@@ -137,4 +139,10 @@ def send_new_order_webhook(order_pk):
         embed.add_field(name="Description", value=order.description, inline=False)
     if order.notes:
         embed.add_field(name="Notes", value=order.notes, inline=False)
-    send_update_to_webhook.delay(embed=embed.to_dict())
+
+    content = None
+    role_id = app_settings.INDUSTRY_ADMIN_WEBHOOK_ROLE_ID
+    if role_id:
+        content = f"<@&{role_id}>"
+
+    send_update_to_webhook.delay(content=content, embed=embed.to_dict())
