@@ -3,10 +3,15 @@
 # Standard Library
 import json
 import logging
+from datetime import timedelta
 
 # Third Party
 import requests
 from celery import shared_task
+from django.utils import timezone
+
+from allianceauth.services.tasks import QueueOnce
+from invoices.models import Invoice
 
 # George Forge
 from georgeforge.models import Order
@@ -50,6 +55,8 @@ def send_statusupdate_dm(order):
                 c = Color.blue()
             case Order.OrderStatus.AWAITING_DEPOSIT:
                 c = Color.purple()
+            case Order.OrderStatus.DEPOSIT_RECIEVED:
+                c = Color.blue()
             case Order.OrderStatus.BUILDING_PARTS:
                 c = Color.orange()
             case Order.OrderStatus.BUILDING_HULL:
@@ -85,11 +92,11 @@ def send_statusupdate_dm(order):
         if (
             order.status == Order.OrderStatus.PENDING
             and order.deposit > 0
-            and app_settings.ORDER_DEPOSIT_INSTRUCTIONS
+            and app_settings.GEORGEFORGE_ORDER_DEPOSIT_INSTRUCTIONS
         ):
             e.add_field(
                 name="Deposit Instructions",
-                value=app_settings.ORDER_DEPOSIT_INSTRUCTIONS,
+                value=app_settings.GEORGEFORGE_ORDER_DEPOSIT_INSTRUCTIONS,
                 inline=False,
             )
 
@@ -144,7 +151,7 @@ def send_deliverydateupdate_dm(order):
 
 @shared_task
 def send_update_to_webhook(content=None, embed=None):
-    web_hook = app_settings.INDUSTRY_ADMIN_WEBHOOK
+    web_hook = app_settings.GEORGEFORGE_ADMIN_WEBHOOK
     if web_hook is not None:
         custom_headers = {"Content-Type": "application/json"}
         payload = {}
@@ -167,44 +174,105 @@ def send_update_to_webhook(content=None, embed=None):
 
 
 @shared_task
-def send_new_order_webhook(order_pk):
+def send_order_webhook(order_pk, updated=False, update_type=0):
     if not app_settings.webhook_available():
         return
 
     order = Order.objects.get(pk=order_pk)
-    embed = Embed(
-        title=f"New Ship Order: {order.quantity} x {order.eve_type.name}",
-        color=Color.blue(),
-    )
-    embed.add_field(
-        name="Purchaser",
-        value=order.user.profile.main_character.character_name,
-        inline=True,
-    )
-    embed.add_field(name="Quantity", value=str(order.quantity), inline=True)
-    embed.add_field(
-        name="Price per Unit",
-        value=f"{order.price:,.2f} ISK",
-        inline=True,
-    )
-    embed.add_field(
-        name="Total Cost",
-        value=f"{order.totalcost:,.2f} ISK",
-        inline=True,
-    )
-    embed.add_field(name="Deposit", value=f"{order.deposit:,.2f} ISK", inline=True)
-    embed.add_field(
-        name="Delivery System", value=order.deliverysystem.name, inline=True
-    )
-    embed.add_field(name="Status", value=order.get_status_display(), inline=True)
-    if order.description:
-        embed.add_field(name="Description", value=order.description, inline=False)
-    if order.notes:
-        embed.add_field(name="Notes", value=order.notes, inline=False)
+    if not updated:
+        embed = Embed(
+            title=f"New Ship Order: {order.quantity} x {order.eve_type.name}",
+            color=Color.blue(),
+        )
+        embed.add_field(
+            name="Purchaser",
+            value=order.user.profile.main_character.character_name,
+            inline=True,
+        )
+        embed.add_field(name="Quantity", value=str(order.quantity), inline=True)
+        embed.add_field(
+            name="Price per Unit",
+            value=f"{order.price:,.2f} ISK",
+            inline=True,
+        )
+        embed.add_field(
+            name="Total Cost",
+            value=f"{order.totalcost:,.2f} ISK",
+            inline=True,
+        )
+        embed.add_field(name="Deposit", value=f"{order.deposit:,.2f} ISK", inline=True)
+        embed.add_field(
+            name="Delivery System", value=order.deliverysystem.name, inline=True
+        )
+        embed.add_field(name="Status", value=order.get_status_display(), inline=True)
+        if order.description:
+            embed.add_field(name="Description", value=order.description, inline=False)
+        if order.notes:
+            embed.add_field(name="Notes", value=order.notes, inline=False)
+    else:
+        embed = Embed(
+            title=f"Order #{order.id} updated!",
+            color=Color.purple(),
+        )
+        embed.add_field(
+            name="New status",
+            value=order.get_status_display(),
+            inline=True
+        )
+        match update_type:
+            case 0: # DEPOSIT_PAID
+                embed.add_field(
+                    name="Deposit paid!",
+                    value=f"Invoice GF-DEP-{order.id} marked as paid.",
+                    inline=False
+                )
+                embed.add_field(
+                    name="Paid",
+                    value=f"{order.paid:,.2f} ISK",
+                    inline=True
+                )
+                embed.add_field(
+                    name="Expected deposit",
+                    value=f"{order.deposit:,.2f} ISK",
+                    inline=True
+                )
+                embed.add_field(
+                    name="Order Total",
+                    value=f"{order.totalcost:,.2f} ISK",
+                    inline=True
+                )
 
     content = None
-    role_id = app_settings.INDUSTRY_ADMIN_WEBHOOK_ROLE_ID
+    role_id = app_settings.GEORGEFORGE_ADMIN_WEBHOOK_ROLE_ID
     if role_id:
         content = f"<@&{role_id}>"
 
     send_update_to_webhook.delay(content=content, embed=embed.to_dict())
+
+
+@shared_task(bind=True, base=QueueOnce)
+def check_invoice_status(self):
+    logger.info("Checking for complete Invoices")
+    for order in Order.objects.filter(status=Order.OrderStatus.AWAITING_DEPOSIT).all():
+        ref = f"GF-DEP-{str(order.id)}"
+        inv = Invoice.objects.filter(invoice_ref=ref).get()
+        if inv.paid:
+            pass
+            order.paid += inv.amount
+            order.status = Order.OrderStatus.DEPOSIT_RECIEVED
+            order.save()
+            send_order_webhook(order.id,True)
+
+        
+def send_order_invoice(order):
+    if order.deposit != 0 and order.deposit > order.paid:
+        isk = order.deposit - order.paid
+        due = timezone.now() + timedelta(days=app_settings.GEORGEFORGE_DEPOSIT_DUE)
+        inv = Order.generate_invoice(order.user.id, order.id, isk, due)
+        if inv.amount < 1:
+            logger.error(f"{order.deposit} - {order.paid} = {order.deposit - order.paid} or {isk}")
+            logger.error(print(inv))
+            return 0
+        else:
+            inv.save()
+            Order.ping_invoice(inv)

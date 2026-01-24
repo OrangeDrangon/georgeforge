@@ -17,6 +17,7 @@ from django.shortcuts import redirect, render
 from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
+from django_celery_beat.models import CrontabSchedule, PeriodicTask
 
 # Alliance Auth (External Libs)
 from eveuniverse.models import EveSolarSystem, EveType
@@ -26,8 +27,9 @@ from georgeforge.forms import BulkImportStoreItemsForm
 from georgeforge.models import DeliverySystem, ForSale, Order
 from georgeforge.tasks import (
     send_deliverydateupdate_dm,
-    send_new_order_webhook,
+    send_order_webhook,
     send_statusupdate_dm,
+    send_order_invoice
 )
 
 from . import app_settings
@@ -182,12 +184,12 @@ def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
         orders.append(order)
 
     for order in orders:
-        send_new_order_webhook.delay(order.pk)
+        send_order_webhook.delay(order.pk)
         send_statusupdate_dm(order)
 
     total_deposit = sum(float(order.deposit) for order in orders)
     deposit_instructions = (
-        app_settings.ORDER_DEPOSIT_INSTRUCTIONS if total_deposit > 0 else None
+        app_settings.GEORGEFORGE_ORDER_DEPOSIT_INSTRUCTIONS if total_deposit > 0 else None
     )
 
     if deposit_instructions:
@@ -277,6 +279,8 @@ def order_update_status(request: WSGIRequest, order_id: int) -> JsonResponse:
 
     if order.status != old_status:
         send_statusupdate_dm(order)
+        if order.status == Order.OrderStatus.AWAITING_DEPOSIT:
+            send_order_invoice(order)
 
     logger.info(
         f"Updated order {order_id} status from {old_status} to {status} by {request.user}"
@@ -483,7 +487,7 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
             for item in parsed:
                 try:
                     eve_type = EveType.objects.filter(
-                        eve_group__eve_category_id__in=app_settings.FORGE_CATEGORIES
+                        eve_group__eve_category_id__in=app_settings.GEORGEFORGE_CATEGORIES
                     ).get(name=item["Item Name"])
 
                     ForSale.objects.create(
@@ -543,3 +547,27 @@ def export_offers(request: WSGIRequest) -> HttpResponse:
             [listing.eve_type.name, listing.description, listing.price, listing.deposit]
         )
     return response
+
+@login_required
+@permission_required('georgeforge.manage_store')
+def admin_create_tasks(request):
+    schedule_invoice_status, _ = CrontabSchedule.objects.get_or_create(minute='15,30,45',
+                                                                       hour='*',
+                                                                       day_of_week='*',
+                                                                       day_of_month='*',
+                                                                       month_of_year='*',
+                                                                       timezone='UTC'
+                                                                       )
+
+    PeriodicTask.objects.update_or_create(
+        task='georgeforge.tasks.check_invoice_status',
+        defaults={
+            'crontab': schedule_invoice_status,
+            'name': 'GeorgeForge: Scan deposits',
+            'enabled': True
+        }
+    )
+    messages.info(
+        request, "Created/Reset Invoice Task to defaults")
+
+    return redirect('georgeforge:store')

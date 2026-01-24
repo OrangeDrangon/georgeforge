@@ -2,6 +2,8 @@
 App Models
 """
 
+from georgeforge import app_settings
+
 # Django
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
@@ -10,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 
 # Alliance Auth (External Libs)
 from eveuniverse.models import EveSolarSystem, EveType
-
+from invoices.models import Invoice
 
 class General(models.Model):
     """Meta model for app permissions"""
@@ -104,6 +106,7 @@ class Order(models.Model):
 
         PENDING = 10, _("Pending")
         AWAITING_DEPOSIT = 20, _("Awaiting Deposit")
+        DEPOSIT_RECIEVED = 25, _("Deposit Recieved")
         BUILDING_PARTS = 30, _("Building Parts")
         BUILDING_HULL = 35, _("Building Hull")
         AWAITING_FINAL_PAYMENT = 40, _("Contract Up")
@@ -187,6 +190,22 @@ class Order(models.Model):
     estimated_delivery_date = models.CharField(
         _("Estimated Delivery Date"),
         max_length=50,
-        default="",
+        blank=True,
         help_text=_("Estimated date when the order will be delivered"),
     )
+
+    @classmethod
+    def ping_invoice(cls, inv):
+        # ping the invoice to the user ( if we know them )
+        message = f"{inv.note}\n\nPlease check auth for how to pay!\n"
+        inv.notify(message, title=app_settings.GEORGEFORGE_APP_NAME)
+
+    @classmethod
+    def generate_invoice(cls, cid, oid, price, due_date):
+        msg = f"Deposit invoice for Order #{oid}"
+        ref = f"GF-DEP-{str(oid)}"
+        return Invoice.objects.create(character_id=cid,
+                                      amount=round(price, -3),
+                                      invoice_ref=ref,
+                                      note=msg,
+                                      due_date=due_date)
