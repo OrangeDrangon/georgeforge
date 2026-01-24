@@ -45,9 +45,6 @@ def send_discord_dm(user, title, message, color):
 
 def send_statusupdate_dm(order):
     if app_settings.discord_bot_active():
-        message = (
-            f"Your order for {order.eve_type.name} is now {order.get_status_display()}"
-        )
         match order.status:
             case Order.OrderStatus.PENDING:
                 c = Color.blue()
@@ -63,21 +60,86 @@ def send_statusupdate_dm(order):
                 c = Color.green()
             case Order.OrderStatus.REJECTED:
                 c = Color.red()
-        send_discord_dm(order.user, f"Order Updated: {order.eve_type.name}", message, c)
+
+        e = Embed(
+            title=f"Order #{order.pk} Status: {order.get_status_display()}", color=c
+        )
+        e.add_field(name="Item", value=order.eve_type.name, inline=True)
+        e.add_field(name="Quantity", value=str(order.quantity), inline=True)
+        e.add_field(name="Price per Unit", value=f"{order.price:,.2f} ISK", inline=True)
+        e.add_field(name="Total Cost", value=f"{order.totalcost:,.2f} ISK", inline=True)
+        e.add_field(name="Deposit", value=f"{order.deposit:,.2f} ISK", inline=True)
+        e.add_field(
+            name="Delivery System", value=order.deliverysystem.name, inline=True
+        )
+        if order.estimated_delivery_date:
+            e.add_field(
+                name="Estimated Delivery",
+                value=order.estimated_delivery_date,
+                inline=True,
+            )
+        if order.description:
+            e.add_field(name="Description", value=order.description, inline=False)
+        if order.notes:
+            e.add_field(name="Notes", value=order.notes, inline=False)
+        if (
+            order.status == Order.OrderStatus.PENDING
+            and order.deposit > 0
+            and app_settings.ORDER_DEPOSIT_INSTRUCTIONS
+        ):
+            e.add_field(
+                name="Deposit Instructions",
+                value=app_settings.ORDER_DEPOSIT_INSTRUCTIONS,
+                inline=False,
+            )
+
+        try:
+            send_message(user_id=get_discord_user_id(order.user), embed=e)
+            logger.info(
+                f"sent discord ping to {order.user} - order #{order.pk} status updated to {order.get_status_display()}"
+            )
+        except NotAuthenticated:
+            logger.warning(
+                f"Unable to ping {order.user} - order #{order.pk} status updated"
+            )
 
 
 def send_deliverydateupdate_dm(order):
     if app_settings.discord_bot_active():
+        e = Embed(title=f"Order #{order.pk} Delivery Date Updated", color=Color.blue())
+
         if order.estimated_delivery_date:
-            message = f"Your order for {order.eve_type.name} now has an estimated delivery date: {order.estimated_delivery_date}"
+            e.add_field(
+                name="New Estimated Delivery",
+                value=order.estimated_delivery_date,
+                inline=False,
+            )
         else:
-            message = f"The estimated delivery date for your order for {order.eve_type.name} has been cleared"
-        send_discord_dm(
-            order.user,
-            f"Delivery Date Updated: {order.eve_type.name}",
-            message,
-            Color.blue(),
+            e.add_field(name="Estimated Delivery", value="Cleared", inline=False)
+
+        e.add_field(name="Item", value=order.eve_type.name, inline=True)
+        e.add_field(name="Quantity", value=str(order.quantity), inline=True)
+        e.add_field(name="Price per Unit", value=f"{order.price:,.2f} ISK", inline=True)
+        e.add_field(name="Total Cost", value=f"{order.totalcost:,.2f} ISK", inline=True)
+        e.add_field(name="Deposit", value=f"{order.deposit:,.2f} ISK", inline=True)
+        e.add_field(
+            name="Delivery System", value=order.deliverysystem.name, inline=True
         )
+        e.add_field(name="Status", value=order.get_status_display(), inline=True)
+        if order.description:
+            e.add_field(name="Description", value=order.description, inline=False)
+        if order.notes:
+            e.add_field(name="Notes", value=order.notes, inline=False)
+
+        try:
+            send_message(user_id=get_discord_user_id(order.user), embed=e)
+            logger.info(
+                f"sent discord ping to {order.user} - order #{order.pk} delivery date updated"
+            )
+        except NotAuthenticated:
+            logger.warning(
+                f"Unable to ping {order.user} - order #{order.pk} delivery date updated"
+            )
 
 
 @shared_task
@@ -88,8 +150,10 @@ def send_update_to_webhook(content=None, embed=None):
         payload = {}
         if embed:
             payload["embeds"] = [embed]
-        else:
-            payload["content"] = content or "New order update"
+        if content:
+            payload["content"] = content
+        elif not embed:
+            payload["content"] = "New order update"
         r = requests.post(
             web_hook,
             headers=custom_headers,
@@ -137,4 +201,10 @@ def send_new_order_webhook(order_pk):
         embed.add_field(name="Description", value=order.description, inline=False)
     if order.notes:
         embed.add_field(name="Notes", value=order.notes, inline=False)
-    send_update_to_webhook.delay(embed=embed.to_dict())
+
+    content = None
+    role_id = app_settings.INDUSTRY_ADMIN_WEBHOOK_ROLE_ID
+    if role_id:
+        content = f"<@&{role_id}>"
+
+    send_update_to_webhook.delay(content=content, embed=embed.to_dict())

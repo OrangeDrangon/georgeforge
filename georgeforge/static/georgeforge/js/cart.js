@@ -335,8 +335,15 @@
             if (data.success) {
                 clearCart();
                 closeCart();
-                showToast("Order placed successfully!");
-                window.location.href = "/georgeforge/orders";
+                if (data.deposit_instructions) {
+                    showToast(data.deposit_instructions);
+                    setTimeout(() => {
+                        window.location.href = "/georgeforge/orders";
+                    }, 5000);
+                } else {
+                    showToast("Order placed successfully!");
+                    window.location.href = "/georgeforge/orders";
+                }
             } else {
                 showToast(`Error: ${data.error}`);
             }

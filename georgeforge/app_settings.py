@@ -21,3 +21,9 @@ def webhook_available():
 FORGE_CATEGORIES = getattr(settings, "FORGE_CATEGORIES", [4, 6, 7, 8, 18, 20, 63, 66])
 
 INDUSTRY_ADMIN_WEBHOOK = getattr(settings, "INDUSTRY_ADMIN_WEBHOOK", None)
+
+INDUSTRY_ADMIN_WEBHOOK_ROLE_ID = getattr(
+    settings, "INDUSTRY_ADMIN_WEBHOOK_ROLE_ID", None
+)
+
+ORDER_DEPOSIT_INSTRUCTIONS = getattr(settings, "ORDER_DEPOSIT_INSTRUCTIONS", None)

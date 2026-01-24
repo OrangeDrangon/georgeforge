@@ -1,7 +1,12 @@
 """Template tags for georgeforge"""
 
+# Third Party
+# eve_sde
+from eve_sde.models import ItemType
+
 # Django
 from django import template
+from django.utils.translation import gettext_lazy as _
 
 # George Forge
 from georgeforge import app_settings
@@ -26,3 +31,17 @@ def has_discord_linked(user):
         return False
     except ImportError:
         return True
+
+
+@register.filter
+def evetype_icon(eve_type, size=32):
+    """Take an eve_type object and return an image HTML element of it's icon WITH an item level overlay"""
+    base_icon_url = eve_type.icon_url()
+    pip = ""
+    tl = ItemType.objects.get(id=eve_type.id).meta_group_id_raw
+    if tl is None or tl == 1:
+        pip = ""
+    else:
+        pip = f'<img class="pip" src="/static/georgeforge/img/{int(tl)}.png" />'
+
+    return f'<img height="{size}" width="{size}" src="{base_icon_url}" alt="{_("Item Icon")}" />{pip}'
