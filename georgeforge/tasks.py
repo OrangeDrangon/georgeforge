@@ -268,7 +268,8 @@ def send_order_invoice(order):
     if order.deposit != 0 and order.deposit > order.paid:
         isk = order.deposit - order.paid
         due = timezone.now() + timedelta(days=app_settings.GEORGEFORGE_DEPOSIT_DUE)
-        inv = Order.generate_invoice(order.user.id, order.id, isk, due)
+        character_id = order.user.profile.main_character.id
+        inv = Order.generate_invoice(character_id, order.id, isk, due)
         if inv.amount < 1:
             logger.error(f"{order.deposit} - {order.paid} = {order.deposit - order.paid} or {isk}")
             logger.error(print(inv))
