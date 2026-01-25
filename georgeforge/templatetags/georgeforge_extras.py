@@ -44,4 +44,4 @@ def evetype_icon(eve_type, size=32):
     else:
         pip = f'<img class="pip" src="/static/georgeforge/img/{int(tl)}.png" />'
 
-    return f'<img height="{size}" width="{size}" src="{base_icon_url}" alt="{_("Item Icon")}" />{pip}'
+    return f'{pip}<img height="{size}" width="{size}" src="{base_icon_url}" alt="{_("Item Icon")}" />'
