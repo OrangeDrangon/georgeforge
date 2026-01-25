@@ -8,7 +8,7 @@ from allianceauth import hooks
 from allianceauth.services.hooks import MenuItemHook, UrlHook
 
 # George Forge
-from georgeforge import urls
+from georgeforge import urls, app_settings
 
 
 class GeorgeForgeMenuItem(MenuItemHook):
@@ -18,7 +18,7 @@ class GeorgeForgeMenuItem(MenuItemHook):
         # setup menu entry for sidebar
         MenuItemHook.__init__(
             self,
-            _("George Forge"),
+            app_settings.GEORGEFORGE_APP_NAME,
             "fas fa-cube fa-fw",
             "georgeforge:store",
             navactive=["georgeforge:"],

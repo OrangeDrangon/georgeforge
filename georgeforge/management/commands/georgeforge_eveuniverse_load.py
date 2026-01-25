@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 
 # George Forge
 from georgeforge import __title__
-from georgeforge.app_settings import FORGE_CATEGORIES
+from georgeforge.app_settings import GEORGEFORGE_CATEGORIES
 
 
 class Command(BaseCommand):
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         """
 
         categories: list[list[str]] = [
-            ["--category_id", str(x)] for x in FORGE_CATEGORIES
+            ["--category_id", str(x)] for x in GEORGEFORGE_CATEGORIES
         ]
 
         call_command(

@@ -40,4 +40,5 @@ urlpatterns = [
     ),
     path("bulk_import_form", views.bulk_import_form, name="bulk_import_form"),
     path("bulk_import_form/export", views.export_offers, name="export_offers"),
+    path("admin/tasks", views.admin_create_tasks, name="admin_create_tasks"),
 ]
