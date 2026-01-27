@@ -183,10 +183,6 @@ def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
 
         orders.append(order)
 
-    for order in orders:
-        send_order_webhook.delay(order.pk)
-        send_statusupdate_dm(order)
-
     total_deposit = sum(float(order.deposit) for order in orders)
     deposit_instructions = (
         app_settings.GEORGEFORGE_ORDER_DEPOSIT_INSTRUCTIONS if total_deposit > 0 else None
@@ -194,6 +190,14 @@ def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
 
     if deposit_instructions:
         messages.success(request, _(deposit_instructions))
+
+    for order in orders:
+        if not app_settings.GEORGEFORGE_ORDER_PENDING_DEFAULT:
+            order.status = Order.OrderStatus.AWAITING_DEPOSIT
+            order.save()
+            send_order_invoice(order)
+        send_order_webhook.delay(order.pk)
+        send_statusupdate_dm(order)
 
     return JsonResponse(
         {
@@ -281,6 +285,8 @@ def order_update_status(request: WSGIRequest, order_id: int) -> JsonResponse:
         send_statusupdate_dm(order)
         if order.status == Order.OrderStatus.AWAITING_DEPOSIT:
             send_order_invoice(order)
+        if order.status == Order.OrderStatus.REJECTED:
+            Order.cancel_invoice(order_id)
 
     logger.info(
         f"Updated order {order_id} status from {old_status} to {status} by {request.user}"

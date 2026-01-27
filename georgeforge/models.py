@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 # Alliance Auth (External Libs)
 from eveuniverse.models import EveSolarSystem, EveType
@@ -197,7 +198,7 @@ class Order(models.Model):
     @classmethod
     def ping_invoice(cls, inv):
         # ping the invoice to the user ( if we know them )
-        message = f"{inv.note}\n\nPlease check auth for how to pay!\n"
+        message = f"{inv.note}\n\nPlease [CLICK HERE]({settings.SITE_URL}/invoice/r/) for instructions on how to pay your deposit!\n"
         inv.notify(message, title=app_settings.GEORGEFORGE_APP_NAME)
 
     @classmethod
@@ -209,3 +210,14 @@ class Order(models.Model):
                                       invoice_ref=ref,
                                       note=msg,
                                       due_date=due_date)
+    
+    @classmethod
+    def cancel_invoice(cls,oid):
+        ref = f"GF-DEP-{str(oid)}"
+        try:
+            i = Invoice.objects.get(invoice_ref=ref)
+        except Invoice.DoesNotExist:
+            return True
+        else:
+            i.delete()
+        return True
