@@ -3,7 +3,7 @@
 # Standard Library
 import json
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 # Third Party
 import requests
@@ -212,35 +212,71 @@ def send_order_webhook(order_pk, updated=False, update_type=0):
     else:
         embed = Embed(
             title=f"Order #{order.id} updated!",
-            color=Color.purple(),
+            color=Color.purple()
         )
         embed.add_field(
             name="New status",
-            value=order.get_status_display(),
+            value=f"```{order.get_status_display()}```",
             inline=True
+        )
+        embed.add_field(
+            name="Order Date (M/D/Y)",
+            value=f"```{str(datetime.now().strftime('%m/%d/%Y'))}```" # i hate this as much as you do, i know
         )
         match update_type:
             case 0: # DEPOSIT_PAID
                 embed.add_field(
                     name="Deposit paid!",
-                    value=f"Invoice GF-DEP-{order.id} marked as paid.",
+                    value=f"```Invoice GF-DEP-{order.id} marked as paid.```",
                     inline=False
                 )
                 embed.add_field(
-                    name="Paid",
-                    value=f"{order.paid:,.2f} ISK",
+                    name="Quantity",
+                    value=f"```{order.quantity}```",
                     inline=True
                 )
                 embed.add_field(
-                    name="Expected deposit",
-                    value=f"{order.deposit:,.2f} ISK",
+                    name="Item",
+                    value=f"```{order.eve_type.name}```",
+                    inline=True
+                )
+                embed.add_field(
+                    name="Type",
+                    value=f"```{order.eve_type.eve_group.name}```",
+                    inline=True
+                )
+                embed.add_field(
+                    name="Client",
+                    value=f"```{order.user.profile.main_character.character_name}```",
+                    inline=True
+                )
+                embed.add_field(
+                    name="Paid",
+                    value=f"```{order.paid:,.2f}```",
                     inline=True
                 )
                 embed.add_field(
                     name="Order Total",
-                    value=f"{order.totalcost:,.2f} ISK",
+                    value=f"```{order.totalcost:,.2f}```",
                     inline=True
                 )
+                embed.add_field(
+                    name="Notes",
+                    value=f"```{order.notes}```",
+                    inline=True
+                )
+            case 1: # ADMIN_INVOICE
+                embed.add_field(
+                    name="Invoice missing - assuming this is an internal order!",
+                    value=f"```Invoice GF-DEP-{order.id} missing.```",
+                    inline=False
+                )
+                embed.add_field(
+                    name="Order details",
+                    value=f"```{order.quantity} x {order.eve_type.name} for {order.user.profile.main_character.character_name}```",
+                    inline=False
+                )
+            
 
     content = None
     role_id = app_settings.GEORGEFORGE_ADMIN_WEBHOOK_ROLE_ID
@@ -255,9 +291,14 @@ def check_invoice_status(self):
     logger.info("Checking for complete Invoices")
     for order in Order.objects.filter(status=Order.OrderStatus.AWAITING_DEPOSIT).all():
         ref = f"GF-DEP-{str(order.id)}"
-        inv = Invoice.objects.filter(invoice_ref=ref).get()
+        try:
+            inv = Invoice.objects.filter(invoice_ref=ref).get()
+        except Invoice.DoesNotExist:
+            order.status = Order.OrderStatus.DEPOSIT_RECIEVED
+            order.save()
+            send_order_webhook(order.id,True,1)
+            continue
         if inv.paid:
-            pass
             order.paid += inv.amount
             order.status = Order.OrderStatus.DEPOSIT_RECIEVED
             order.save()
