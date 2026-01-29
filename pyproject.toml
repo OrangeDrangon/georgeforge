@@ -37,7 +37,7 @@ dependencies = [
     "django-eveuniverse<2,>=1",
     "allianceauth-corptools>=2.5.5",
     "allianceauth-invoices>=0.1.7",
-   # "django-eveonline-sde @ git+https://github.com/Solar-Helix-Independent-Transport/django-eveonline-sde.git",
+    "django-eveonline-sde>=0.0.1a1,<1",
 ]
 
 [project.optional-dependencies]
@@ -52,9 +52,6 @@ webhook = [
 dev = [
     "django-stubs"
 ]
-
-#[tool.hatch.metadata]
-#allow-direct-references = true
 
 [tool.hatch.version]
 path = "georgeforge/__init__.py"
