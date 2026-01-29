@@ -40,7 +40,7 @@ in
     check-added-large-files.enable = true;
     check-case-conflicts.enable = true;
     markdownlint.enable = true;
-    nixfmt-rfc-style.enable = true;
+    nixfmt.enable = true;
     prettier.enable = true;
     trufflehog.enable = true;
   };
