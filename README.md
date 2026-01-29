@@ -23,6 +23,10 @@ ORDER_DEPOSIT_INSTRUCTIONS = "Please send your deposit to Character Name"
 
 ## Installation
 
+We depend on
+[django-eveonline-sde](https://github.com/Solar-Helix-Independent-Transport/django-eveonline-sde)
+so follow those instructions. Also for now also django-eveuniverse.
+
 ```bash
 python manage.py migrate
 python manage.py collectstatic --no-input
