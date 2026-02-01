@@ -20,7 +20,7 @@ from django.views.decorators.http import require_POST
 from django_celery_beat.models import CrontabSchedule, PeriodicTask
 
 # Alliance Auth (External Libs)
-from eveuniverse.models import EveSolarSystem, EveType
+from eve_sde.models import SolarSystem, ItemType
 
 # George Forge
 from georgeforge.forms import BulkImportStoreItemsForm
@@ -47,15 +47,15 @@ def store(request: WSGIRequest) -> HttpResponse:
     """
 
     for_sale = (
-        ForSale.objects.select_related("eve_type__eve_group")
+        ForSale.objects.select_related("eve_type__group")
         .all()
-        .order_by("eve_type__eve_group__name")
+        .order_by("eve_type__group__name")
     )
 
     groups = [
         (key, list(l))
         for key, l in itertools.groupby(
-            for_sale, key=attrgetter("eve_type.eve_group.name")
+            for_sale, key=attrgetter("eve_type.group.name")
         )
     ]
     groups.sort(key=lambda pair: max(entry.price for entry in pair[1]), reverse=True)
@@ -133,8 +133,8 @@ def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
         )
 
     try:
-        deliverysystem = EveSolarSystem.objects.get(id=deliverysystem_id)
-    except EveSolarSystem.DoesNotExist:
+        deliverysystem = SolarSystem.objects.get(id=deliverysystem_id)
+    except SolarSystem.DoesNotExist:
         return JsonResponse(
             {"success": False, "error": "Invalid delivery system"}, status=400
         )
@@ -397,8 +397,8 @@ def order_update_system(request: WSGIRequest, order_id: int) -> JsonResponse:
         )
 
     try:
-        deliverysystem = EveSolarSystem.objects.get(id=system_id)
-    except EveSolarSystem.DoesNotExist:
+        deliverysystem = SolarSystem.objects.get(id=system_id)
+    except SolarSystem.DoesNotExist:
         return JsonResponse(
             {"success": False, "error": "Delivery system not found"}, status=404
         )
@@ -492,8 +492,8 @@ def bulk_import_form(request: WSGIRequest) -> HttpResponse:
 
             for item in parsed:
                 try:
-                    eve_type = EveType.objects.filter(
-                        eve_group__eve_category_id__in=app_settings.GEORGEFORGE_CATEGORIES
+                    eve_type = ItemType.objects.filter(
+                        group__category_id__in=app_settings.GEORGEFORGE_CATEGORIES
                     ).get(name=item["Item Name"])
 
                     ForSale.objects.create(
