@@ -7,6 +7,9 @@ import logging
 import uuid
 from operator import attrgetter
 
+# Third Party
+from django_celery_beat.models import CrontabSchedule, PeriodicTask
+
 # Django
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -17,7 +20,6 @@ from django.shortcuts import redirect, render
 from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from django_celery_beat.models import CrontabSchedule, PeriodicTask
 
 # Alliance Auth (External Libs)
 from eveuniverse.models import EveSolarSystem, EveType
@@ -27,9 +29,9 @@ from georgeforge.forms import BulkImportStoreItemsForm
 from georgeforge.models import DeliverySystem, ForSale, Order
 from georgeforge.tasks import (
     send_deliverydateupdate_dm,
+    send_order_invoice,
     send_order_webhook,
     send_statusupdate_dm,
-    send_order_invoice
 )
 
 from . import app_settings
@@ -185,7 +187,9 @@ def cart_checkout_api(request: WSGIRequest) -> JsonResponse:
 
     total_deposit = sum(float(order.deposit) for order in orders)
     deposit_instructions = (
-        app_settings.GEORGEFORGE_ORDER_DEPOSIT_INSTRUCTIONS if total_deposit > 0 else None
+        app_settings.GEORGEFORGE_ORDER_DEPOSIT_INSTRUCTIONS
+        if total_deposit > 0
+        else None
     )
 
     if deposit_instructions:
@@ -554,26 +558,27 @@ def export_offers(request: WSGIRequest) -> HttpResponse:
         )
     return response
 
+
 @login_required
-@permission_required('georgeforge.manage_store')
+@permission_required("georgeforge.manage_store")
 def admin_create_tasks(request):
-    schedule_invoice_status, _ = CrontabSchedule.objects.get_or_create(minute='15,30,45',
-                                                                       hour='*',
-                                                                       day_of_week='*',
-                                                                       day_of_month='*',
-                                                                       month_of_year='*',
-                                                                       timezone='UTC'
-                                                                       )
+    schedule_invoice_status, _ = CrontabSchedule.objects.get_or_create(
+        minute="15,30,45",
+        hour="*",
+        day_of_week="*",
+        day_of_month="*",
+        month_of_year="*",
+        timezone="UTC",
+    )
 
     PeriodicTask.objects.update_or_create(
-        task='georgeforge.tasks.check_invoice_status',
+        task="georgeforge.tasks.check_invoice_status",
         defaults={
-            'crontab': schedule_invoice_status,
-            'name': 'GeorgeForge: Scan deposits',
-            'enabled': True
-        }
+            "crontab": schedule_invoice_status,
+            "name": "GeorgeForge: Scan deposits",
+            "enabled": True,
+        },
     )
-    messages.info(
-        request, "Created/Reset Invoice Task to defaults")
+    messages.info(request, "Created/Reset Invoice Task to defaults")
 
-    return redirect('georgeforge:store')
+    return redirect("georgeforge:store")

@@ -2,18 +2,22 @@
 App Models
 """
 
-from georgeforge import app_settings
+# Third Party
+from invoices.models import Invoice
 
 # Django
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.conf import settings
 
 # Alliance Auth (External Libs)
 from eveuniverse.models import EveSolarSystem, EveType
-from invoices.models import Invoice
+
+# George Forge
+from georgeforge import app_settings
+
 
 class General(models.Model):
     """Meta model for app permissions"""
@@ -205,14 +209,16 @@ class Order(models.Model):
     def generate_invoice(cls, cid, oid, price, due_date):
         msg = f"Deposit invoice for Order #{oid}"
         ref = f"GF-DEP-{str(oid)}"
-        return Invoice.objects.create(character_id=cid,
-                                      amount=round(price, -3),
-                                      invoice_ref=ref,
-                                      note=msg,
-                                      due_date=due_date)
-    
+        return Invoice.objects.create(
+            character_id=cid,
+            amount=round(price, -3),
+            invoice_ref=ref,
+            note=msg,
+            due_date=due_date,
+        )
+
     @classmethod
-    def cancel_invoice(cls,oid):
+    def cancel_invoice(cls, oid):
         ref = f"GF-DEP-{str(oid)}"
         try:
             i = Invoice.objects.get(invoice_ref=ref)
